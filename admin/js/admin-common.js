@@ -7,6 +7,7 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const MENU = [
   { href: "index.html", label: "대시보드", ownerOnly: false },
   { href: "customers.html", label: "고객·상담", ownerOnly: false },
+  { href: "portfolio.html", label: "포트폴리오", ownerOnly: false },
   { href: "quotes.html", label: "견적서", ownerOnly: false },
   { href: "payments.html", label: "정산·지급", ownerOnly: true },
   { href: "materials.html", label: "자재발주", ownerOnly: false }

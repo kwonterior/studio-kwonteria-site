@@ -79,22 +79,8 @@
       <h2>시공 사례</h2>
       <p>경주·포항에서 진행한 아파트·주택 시공 사례입니다</p>
     </div>
-    <div class="project-grid">
-      <div class="project-card">
-        <div class="ph-image">사진 준비중</div>
-        <div class="name">PROJECT 01</div>
-        <div class="tag">아파트</div>
-      </div>
-      <div class="project-card">
-        <div class="ph-image">사진 준비중</div>
-        <div class="name">PROJECT 02</div>
-        <div class="tag">주택</div>
-      </div>
-      <div class="project-card">
-        <div class="ph-image">사진 준비중</div>
-        <div class="name">PROJECT 03</div>
-        <div class="tag">아파트</div>
-      </div>
+    <div class="project-grid" id="home-project-grid">
+      <div class="project-card"><div class="ph-image">불러오는 중...</div></div>
     </div>
     <div style="text-align:center;margin-top:32px;">
       <a href="projects.html" class="btn btn-outline">전체 시공 사례 보기</a>
@@ -134,7 +120,35 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
+<script>
+(async () => {
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const grid = document.getElementById("home-project-grid");
+  const { data, error } = await client
+    .from("projects")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  if (error || !data || !data.length) {
+    grid.innerHTML = '<div class="project-card"><div class="ph-image">아직 등록된 시공 사례가 없습니다</div></div>';
+    return;
+  }
+
+  grid.innerHTML = data.map(p => `
+    <div class="project-card">
+      ${p.image_url
+        ? `<img src="${p.image_url}" alt="${p.title}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;margin-bottom:12px;">`
+        : `<div class="ph-image">사진 준비중</div>`}
+      <div class="name">${p.title}</div>
+      <div class="tag">${p.category || ""}</div>
+    </div>
+  `).join("");
+})();
+</script>
 </body>
 </html>
