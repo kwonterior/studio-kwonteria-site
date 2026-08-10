@@ -140,10 +140,19 @@ function renderQuickAdd() {
   `).join("");
 
   grid.querySelectorAll(".qa-chip").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", async (e) => {
       if (e.target.classList.contains("qa-del")) return; // handled separately
-      if (catEditMode) return;
       const cat = categoriesCache.find(c => c.id === Number(btn.dataset.id));
+      if (catEditMode) {
+        const newName = prompt("카테고리 이름 수정", cat.name);
+        if (newName === null) return;
+        const trimmed = newName.trim();
+        if (!trimmed) { alert("이름은 비워둘 수 없어요."); return; }
+        const { error } = await sbClient.from("schedule_categories").update({ name: trimmed }).eq("id", cat.id);
+        if (error) { alert("수정 실패: " + error.message); return; }
+        loadCategories();
+        return;
+      }
       const form = document.getElementById("schedule-form");
       form.content.value = cat.name;
       if (form.item_date.value) {
