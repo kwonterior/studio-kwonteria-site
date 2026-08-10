@@ -14,43 +14,6 @@
     <p class="sub">현장별 공정 일정과 이슈·메모를 달력으로 관리합니다</p>
 
     <div class="card">
-      <h2 id="form-title">일정 등록</h2>
-      <form id="schedule-form">
-        <input type="hidden" name="id">
-        <div class="form-grid cols-4">
-          <div><label>날짜 *</label><input type="date" name="item_date" required></div>
-          <div style="grid-column:2/4;"><label>현장</label>
-            <select name="customer_id" id="customer-select">
-              <option value="">이슈 / 메모 (현장 없음)</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-grid" style="margin-top:12px;">
-          <div style="grid-column:1/-1;"><label>내용 *</label><input type="text" name="content" required placeholder="예: 타일, 필름, 도배 / 또는 메모 내용"></div>
-        </div>
-        <div class="form-grid" style="margin-top:12px;">
-          <div><label class="check-label"><input type="checkbox" name="confirmed"> 작업자 확정됨</label></div>
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
-          <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
-          <button type="button" class="btn btn-ghost" id="delete-btn" style="display:none;color:#c0392b;">삭제</button>
-        </div>
-      </form>
-
-      <div class="quickadd-head">
-        <span class="remarklabel" style="margin:0;">빠른 추가 <small style="font-weight:400;">(날짜를 먼저 선택하면, 눌렀을 때 바로 등록됩니다)</small></span>
-        <button type="button" class="btn btn-ghost btn-sm" id="cat-edit-toggle">카테고리 편집</button>
-      </div>
-      <div class="quickadd-grid" id="quickadd-grid"></div>
-      <div id="cat-add-row" style="display:none;margin-top:10px;gap:8px;align-items:center;">
-        <input type="color" id="new-cat-color" value="#888888" style="width:40px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px;">
-        <input type="text" id="new-cat-name" placeholder="새 카테고리 이름" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:14px;">
-        <button type="button" class="btn btn-primary btn-sm" id="new-cat-add">추가</button>
-      </div>
-    </div>
-
-    <div class="card">
       <h2>현장 보기</h2>
       <p class="sub" style="margin-bottom:14px;">현장을 누르면 그 현장 일정만 달력에 강조되고, 진행률과 비고를 볼 수 있어요</p>
       <div class="filterrow" id="site-filters"></div>
@@ -73,6 +36,46 @@
         <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow" style="color:#2b5fc0;">토</div>
       </div>
       <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
+      <p class="sub" style="margin-top:10px;margin-bottom:0;">날짜의 "+ 추가"를 누르거나 기존 일정을 누르면 아래에 입력창이 나타납니다.</p>
+    </div>
+
+    <div id="entry-panel" style="display:none;">
+      <div class="card">
+        <h2 id="form-title">일정 등록</h2>
+        <form id="schedule-form">
+          <input type="hidden" name="id">
+          <div class="form-grid cols-4">
+            <div><label>날짜 *</label><input type="date" name="item_date" required></div>
+            <div style="grid-column:2/4;"><label>현장</label>
+              <select name="customer_id" id="customer-select">
+                <option value="">이슈 / 메모 (현장 없음)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div style="grid-column:1/-1;"><label>내용 *</label><input type="text" name="content" required placeholder="예: 타일, 필름, 도배 / 또는 메모 내용"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div><label class="check-label"><input type="checkbox" name="confirmed"> 작업자 확정됨</label></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
+            <button type="button" class="btn btn-ghost" id="cancel-edit">취소</button>
+            <button type="button" class="btn btn-ghost" id="delete-btn" style="display:none;color:#c0392b;">삭제</button>
+          </div>
+        </form>
+
+        <div class="quickadd-head">
+          <span class="remarklabel" style="margin:0;">빠른 추가 <small style="font-weight:400;">(눌렀을 때 바로 등록됩니다)</small></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="cat-edit-toggle">카테고리 편집</button>
+        </div>
+        <div class="quickadd-grid" id="quickadd-grid"></div>
+        <div id="cat-add-row" style="display:none;margin-top:10px;gap:8px;align-items:center;">
+          <input type="color" id="new-cat-color" value="#888888" style="width:40px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px;">
+          <input type="text" id="new-cat-name" placeholder="새 카테고리 이름" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:14px;">
+          <button type="button" class="btn btn-primary btn-sm" id="new-cat-add">추가</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -333,7 +336,7 @@ async function loadAndRenderCalendar() {
       if (e.target.classList.contains("confirm-toggle")) return;
       const id = Number(el.dataset.id);
       const item = (data || []).find(x => x.id === id);
-      if (item) setForm(null, item);
+      if (item) openEntryPanel(null, item);
     });
   });
   grid.querySelectorAll(".confirm-toggle").forEach(el => {
@@ -348,7 +351,7 @@ async function loadAndRenderCalendar() {
     });
   });
   grid.querySelectorAll(".cal-add-link").forEach(el => {
-    el.addEventListener("click", () => setForm(el.dataset.date, null));
+    el.addEventListener("click", () => openEntryPanel(el.dataset.date, null));
   });
 }
 
@@ -362,11 +365,17 @@ function setForm(dateStr, item) {
   form.confirmed.checked = item?.confirmed || false;
   document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
   document.getElementById("submit-btn").textContent = editingId ? "수정 저장" : "등록하기";
-  document.getElementById("cancel-edit").style.display = editingId || dateStr ? "inline-flex" : "none";
   document.getElementById("delete-btn").style.display = editingId ? "inline-flex" : "none";
-  window.scrollTo({ top: 0, behavior: "smooth" });
 }
-function resetForm() { setForm(null, null); document.getElementById("cancel-edit").style.display = "none"; }
+function openEntryPanel(dateStr, item) {
+  document.getElementById("entry-panel").style.display = "block";
+  setForm(dateStr, item);
+  document.getElementById("entry-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function resetForm() {
+  setForm(null, null);
+  document.getElementById("entry-panel").style.display = "none";
+}
 
 function shiftMonth(delta) {
   viewMonth += delta;
