@@ -11,7 +11,7 @@
   <div class="sidebar" id="sidebar"></div>
   <div class="main">
     <h1>공정표</h1>
-    <p class="sub">현장별 공정 일정과 이슈·메모를 달력으로 관리합니다</p>
+    <p class="sub">현장별 공정 일정과 특이사항을 달력으로 관리합니다</p>
 
     <div class="card">
       <h2>현장 보기</h2>
@@ -51,7 +51,7 @@
             <div><label>날짜 *</label><input type="date" name="item_date" required></div>
             <div style="grid-column:2/4;"><label>현장</label>
               <select name="customer_id" id="customer-select">
-                <option value="">이슈 / 메모 (현장 없음)</option>
+                <option value="">특이사항 (현장 없음)</option>
               </select>
             </div>
           </div>
@@ -112,6 +112,7 @@ const HOLIDAYS_2026 = new Set([
   "2026-12-25", // 성탄절
 ]);
 function isHoliday(dateStr){ return HOLIDAYS_2026.has(dateStr); }
+const DOW_LABELS = ["일","월","화","수","목","금","토"];
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 function toISO(y, m, d) { return `${y}-${pad2(m)}-${pad2(d)}`; }
@@ -361,8 +362,6 @@ function renderDayGrid(data, daysInMonth) {
 
 function renderSiteTable(data, daysInMonth) {
   const todayStr = new Date().toISOString().slice(0, 10);
-  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay();
-  const numWeeks = Math.ceil((firstDow + daysInMonth) / 7);
 
   const itemsByKey = {}; // `${date}|${customerId||issue}` -> items[]
   data.forEach(it => {
@@ -370,65 +369,51 @@ function renderSiteTable(data, daysInMonth) {
     (itemsByKey[key] = itemsByKey[key] || []).push(it);
   });
 
-  function dayHeaderCell(wd) {
-    if (!wd) return `<th></th>`;
-    const dow = new Date(viewYear, viewMonth - 1, wd.day).getDay();
+  const activeSiteIds = [...new Set(data.filter(it => it.customer_id).map(it => it.customer_id))];
+  const sites = customersCache.filter(c => activeSiteIds.includes(c.id));
+  const hasIssue = data.some(it => !it.customer_id);
+
+  let headRow = `<th class="sitecol">현장</th>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = toISO(viewYear, viewMonth, d);
+    const dow = new Date(viewYear, viewMonth - 1, d).getDay();
     let c = "";
-    if (isHoliday(wd.dateStr) || dow === 0) c = "color:#c0392b;";
+    if (isHoliday(dateStr) || dow === 0) c = "color:#c0392b;";
     else if (dow === 6) c = "color:#2b5fc0;";
-    const todayBg = wd.dateStr === todayStr ? "background:#eaf5ea;" : "";
-    return `<th style="${c}${todayBg}">${wd.day}</th>`;
+    const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
+    headRow += `<th style="${c}${todayBg}">${d}<br><span style="font-weight:400;font-size:10px;">${DOW_LABELS[dow]}</span></th>`;
   }
-  function rowCells(weekDates, key, color) {
-    return weekDates.map(wd => {
-      if (!wd) return `<td></td>`;
-      const items = itemsByKey[`${wd.dateStr}|${key}`] || [];
-      const todayBg = wd.dateStr === todayStr ? "background:#eaf5ea;" : "";
+
+  function rowCells(key, color) {
+    let cells = "";
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = toISO(viewYear, viewMonth, d);
+      const items = itemsByKey[`${dateStr}|${key}`] || [];
+      const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
       const chips = items.map(it =>
         `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.confirmed ? "● " : ""}${it.content}</span>`
       ).join("");
-      return `<td style="${todayBg}" data-date="${wd.dateStr}" data-site="${key === "issue" ? "" : key}">${chips}</td>`;
-    }).join("");
+      cells += `<td style="${todayBg}" data-date="${dateStr}" data-site="${key === "issue" ? "" : key}">${chips}</td>`;
+    }
+    return cells;
   }
 
-  let weeksHtml = "";
-  for (let w = 0; w < numWeeks; w++) {
-    const weekDates = [];
-    for (let c = 0; c < 7; c++) {
-      const dayNum = w * 7 + c - firstDow + 1;
-      weekDates.push(dayNum >= 1 && dayNum <= daysInMonth ? { day: dayNum, dateStr: toISO(viewYear, viewMonth, dayNum) } : null);
-    }
+  let bodyRows = sites.map(site => {
+    const color = colorFor(site.id);
+    return `<tr><td class="sitecol" data-id="${site.id}" style="color:${color};">${site.name}</td>${rowCells(site.id, color)}</tr>`;
+  }).join("");
+  if (hasIssue) {
+    bodyRows += `<tr><td class="sitecol" style="color:var(--sub);">특이사항</td>${rowCells("issue", "#71695f")}</tr>`;
+  }
+  if (!bodyRows) {
+    bodyRows = `<tr><td class="sitecol" style="color:var(--sub);">등록된 일정 없음</td>${Array.from({length:daysInMonth}, () => "<td></td>").join("")}</tr>`;
+  }
 
-    const weekSiteIds = new Set();
-    let weekHasIssue = false;
-    weekDates.forEach(wd => {
-      if (!wd) return;
-      (data.filter(it => it.item_date === wd.dateStr)).forEach(it => {
-        if (it.customer_id) weekSiteIds.add(it.customer_id);
-        else weekHasIssue = true;
-      });
-    });
-    const weekSites = customersCache.filter(c => weekSiteIds.has(c.id));
-
-    const headRow = `<th class="sitecol">현장</th>` + weekDates.map(dayHeaderCell).join("");
-    let bodyRows = weekSites.map(site => {
-      const color = colorFor(site.id);
-      return `<tr><td class="sitecol" data-id="${site.id}" style="color:${color};">${site.name}</td>${rowCells(weekDates, site.id, color)}</tr>`;
-    }).join("");
-    if (weekHasIssue) {
-      bodyRows += `<tr><td class="sitecol" style="color:var(--sub);">이슈</td>${rowCells(weekDates, "issue", "#71695f")}</tr>`;
-    }
-    if (!bodyRows) {
-      bodyRows = `<tr><td class="sitecol" style="color:var(--sub);">-</td>${weekDates.map(() => "<td></td>").join("")}</tr>`;
-    }
-
-    weeksHtml += `<table class="sched-table sched-week">
+  document.getElementById("table-view").innerHTML = `
+    <div class="sched-table-wrap"><table class="sched-table">
       <thead><tr>${headRow}</tr></thead>
       <tbody>${bodyRows}</tbody>
-    </table>`;
-  }
-
-  document.getElementById("table-view").innerHTML = `<div class="sched-table-wrap">${weeksHtml}</div>`;
+    </table></div>`;
 
   document.querySelectorAll(".sched-table td.sitecol[data-id]").forEach(el => {
     el.addEventListener("click", () => {
