@@ -155,8 +155,10 @@ tbody tr:hover{background:#faf8f4;}
 .cal-cell.dim{opacity:.35;}
 
 /* 전체보기 표(엑셀 스타일) */
-.sched-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+.sched-table-wrap{overflow-x:auto;}
 .sched-table{border-collapse:collapse;min-width:max-content;width:100%;}
+.sched-week{margin-bottom:14px;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.sched-week:last-child{margin-bottom:0;}
 .sched-table th,.sched-table td{
   border:1px solid var(--line);padding:6px 7px;font-size:12px;text-align:center;
   white-space:nowrap;min-width:38px;
