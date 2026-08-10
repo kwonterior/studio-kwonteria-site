@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로그인 | 스튜디오 권테리어 관리자</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-box">
+    <h1>스튜디오 권테리어</h1>
+    <p>관리자페이지 로그인</p>
+    <form id="login-form">
+      <div class="row">
+        <label>이메일</label>
+        <input type="email" name="email" required autocomplete="username">
+      </div>
+      <div class="row">
+        <label>비밀번호</label>
+        <input type="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">로그인</button>
+      <div class="login-error" id="login-error">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://qpyqhgczsigqiuxdujgq.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_CU5HOfouKF8OrUq3B7wYHw_WmpeBQ2g";
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 이미 로그인되어 있으면 바로 대시보드로 이동
+  client.auth.getSession().then(({ data }) => {
+    if (data.session) window.location.href = "index.html";
+  });
+
+  document.getElementById("login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errorBox = document.getElementById("login-error");
+    errorBox.style.display = "none";
+    const btn = form.querySelector("button");
+    btn.disabled = true;
+    btn.textContent = "로그인 중...";
+
+    const { error } = await client.auth.signInWithPassword({
+      email: form.email.value,
+      password: form.password.value
+    });
+
+    if (error) {
+      errorBox.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "로그인";
+      return;
+    }
+    window.location.href = "index.html";
+  });
+</script>
+</body>
+</html>

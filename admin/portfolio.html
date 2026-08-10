@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포트폴리오 관리 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="portfolio.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>포트폴리오 관리</h1>
+    <p class="sub">여기서 올리는 사진과 글이 홈페이지 PROJECTS 화면에 그대로 나타납니다</p>
+
+    <div class="card">
+      <h2 id="form-title">새 시공 사례 등록</h2>
+      <form id="portfolio-form">
+        <input type="hidden" name="id">
+        <input type="hidden" name="image_path">
+        <input type="hidden" name="image_url">
+        <div class="form-grid cols-4">
+          <div><label>현장명 *</label><input type="text" name="title" required placeholder="예: 황성동 30평 아파트"></div>
+          <div><label>구분</label>
+            <select name="category">
+              <option value="아파트">아파트</option>
+              <option value="주택">주택</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div><label>정렬 순서</label><input type="number" name="sort_order" value="0" placeholder="숫자가 작을수록 먼저 표시"></div>
+          <div><label>대표 사진</label><input type="file" name="image_file" accept="image/*"></div>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div style="grid-column:1/-1;"><label>소개 글 (짧은 스토리)</label><textarea name="description" rows="2" placeholder="이런 고민이 있었고, 이렇게 해결했다는 짧은 이야기"></textarea></div>
+        </div>
+        <div id="current-image-preview" style="margin-top:10px;"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
+          <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>등록된 시공 사례 (<span id="count">0</span>개)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>사진</th><th>현장명</th><th>구분</th><th>순서</th><th>등록일</th><th></th></tr>
+          </thead>
+          <tbody id="list-body">
+            <tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+let editingId = null;
+
+async function loadList() {
+  const { data, error } = await sbClient.from("projects").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false });
+  const tbody = document.getElementById("list-body");
+  document.getElementById("count").textContent = data ? data.length : 0;
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">등록된 시공 사례가 없습니다</td></tr>`; return; }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>${p.image_url ? `<img src="${p.image_url}" style="width:70px;height:52px;object-fit:cover;border-radius:4px;">` : "-"}</td>
+      <td>${p.title}</td>
+      <td>${p.category || "-"}</td>
+      <td>${p.sort_order ?? 0}</td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(p)})'>수정</button>
+        <button class="btn btn-ghost btn-sm" onclick='deleteRow(${p.id})'>삭제</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function editRow(p) {
+  editingId = p.id;
+  const form = document.getElementById("portfolio-form");
+  form.title.value = p.title || "";
+  form.category.value = p.category || "아파트";
+  form.sort_order.value = p.sort_order ?? 0;
+  form.description.value = p.description || "";
+  form.image_path.value = p.image_path || "";
+  form.image_url.value = p.image_url || "";
+  document.getElementById("current-image-preview").innerHTML = p.image_url ? `현재 사진: <img src="${p.image_url}" style="width:100px;display:block;margin-top:6px;border-radius:4px;">` : "";
+  document.getElementById("form-title").textContent = p.title + " 수정";
+  document.getElementById("submit-btn").textContent = "수정 저장";
+  document.getElementById("cancel-edit").style.display = "inline-flex";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("portfolio-form").reset();
+  document.getElementById("current-image-preview").innerHTML = "";
+  document.getElementById("form-title").textContent = "새 시공 사례 등록";
+  document.getElementById("submit-btn").textContent = "등록하기";
+  document.getElementById("cancel-edit").style.display = "none";
+}
+
+async function deleteRow(id) {
+  if (!confirm("이 시공 사례를 삭제하시겠습니까?")) return;
+  const { data: row } = await sbClient.from("projects").select("image_path").eq("id", id).single();
+  if (row && row.image_path) {
+    await sbClient.storage.from("portfolio").remove([row.image_path]);
+  }
+  const { error } = await sbClient.from("projects").delete().eq("id", id);
+  if (error) { alert("삭제 실패: " + error.message); return; }
+  loadList();
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  loadList();
+
+  document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+  document.getElementById("portfolio-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = document.getElementById("submit-btn");
+    submitBtn.disabled = true;
+
+    let imagePath = form.image_path.value;
+    let imageUrl = form.image_url.value;
+
+    const file = form.image_file.files[0];
+    if (file) {
+      submitBtn.textContent = "사진 업로드 중...";
+      const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+      const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
+      if (uploadError) {
+        alert("사진 업로드 실패: " + uploadError.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = editingId ? "수정 저장" : "등록하기";
+        return;
+      }
+      // 기존 사진 교체 시 이전 파일 삭제
+      if (editingId && imagePath) {
+        await sbClient.storage.from("portfolio").remove([imagePath]);
+      }
+      imagePath = path;
+      imageUrl = sbClient.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
+    }
+
+    const payload = {
+      title: form.title.value,
+      category: form.category.value,
+      sort_order: Number(form.sort_order.value) || 0,
+      description: form.description.value,
+      image_path: imagePath,
+      image_url: imageUrl
+    };
+
+    let result;
+    if (editingId) {
+      result = await sbClient.from("projects").update(payload).eq("id", editingId);
+    } else {
+      payload.created_by = auth.user.id;
+      result = await sbClient.from("projects").insert([payload]);
+    }
+    submitBtn.disabled = false;
+
+    if (result.error) { alert("저장 실패: " + result.error.message); submitBtn.textContent = editingId ? "수정 저장" : "등록하기"; return; }
+    resetForm();
+    loadList();
+  });
+})();
+</script>
+</body>
+</html>

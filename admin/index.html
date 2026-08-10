@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대시보드 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="index.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>대시보드</h1>
+    <p class="sub">최근 등록된 고객·상담 내역입니다</p>
+
+    <div class="card">
+      <h2>최근 상담 문의 (최신 10건)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>날짜</th><th>이름</th><th>연락처</th><th>지역</th><th>상태</th><th>유입경로</th></tr>
+          </thead>
+          <tbody id="recent-list">
+            <tr class="empty-row"><td colspan="6">불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>바로가기</h2>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="customers.html" class="btn btn-ghost">고객·상담 관리</a>
+        <a href="quotes.html" class="btn btn-ghost">견적서 관리</a>
+        <a href="materials.html" class="btn btn-ghost">자재발주 관리</a>
+        <a href="payments.html" class="btn btn-ghost">정산·지급 관리</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+
+  const { data, error } = await sbClient
+    .from("customers")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const tbody = document.getElementById("recent-list");
+  if (error) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">불러오기 실패: ${error.message}</td></tr>`;
+    return;
+  }
+  if (!data.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">아직 등록된 상담 문의가 없습니다</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>${c.name || "-"}</td>
+      <td>${c.phone || "-"}</td>
+      <td>${c.region || "-"}</td>
+      <td><span class="badge status-${c.status}">${c.status || "-"}</span></td>
+      <td>${c.source || "-"}</td>
+    </tr>
+  `).join("");
+})();
+</script>
+</body>
+</html>

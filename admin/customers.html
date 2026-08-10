@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고객·상담 관리 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="customers.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>고객·상담 관리</h1>
+    <p class="sub">홈페이지 상담 신청은 자동으로 여기에 등록됩니다. 전화·현장 상담 건은 직접 추가해주세요.</p>
+
+    <div class="card">
+      <h2 id="form-title">새 고객·상담 등록</h2>
+      <form id="customer-form">
+        <input type="hidden" name="id">
+        <div class="form-grid">
+          <div><label>이름 *</label><input type="text" name="name" required></div>
+          <div><label>연락처</label><input type="text" name="phone"></div>
+          <div><label>지역</label>
+            <select name="region">
+              <option value="경주">경주</option>
+              <option value="포항">포항</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div><label>주소</label><input type="text" name="address"></div>
+          <div><label>평수</label><input type="text" name="area_pyeong" placeholder="예: 30평"></div>
+          <div><label>예산</label><input type="text" name="budget" placeholder="예: 5000만원"></div>
+          <div><label>유입경로</label>
+            <select name="source">
+              <option value="블로그">블로그</option>
+              <option value="인스타그램">인스타그램</option>
+              <option value="지인소개">지인소개</option>
+              <option value="유튜브">유튜브</option>
+              <option value="홈페이지">홈페이지</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div><label>진행상태</label>
+            <select name="status">
+              <option value="문의">문의</option>
+              <option value="상담중">상담중</option>
+              <option value="견적중">견적중</option>
+              <option value="계약">계약</option>
+              <option value="공사중">공사중</option>
+              <option value="준공">준공</option>
+              <option value="AS">A/S</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div style="grid-column:1/-1;"><label>메모</label><textarea name="memo" rows="2"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
+          <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>전체 고객·상담 목록</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>등록일</th><th>이름</th><th>연락처</th><th>지역</th><th>평수</th><th>예산</th><th>상태</th><th>경로</th><th></th></tr>
+          </thead>
+          <tbody id="list-body">
+            <tr class="empty-row"><td colspan="9">불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+let editingId = null;
+
+async function loadList() {
+  const { data, error } = await sbClient.from("customers").select("*").order("created_at", { ascending: false });
+  const tbody = document.getElementById("list-body");
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="9">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="9">등록된 고객이 없습니다</td></tr>`; return; }
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>${c.name || "-"}</td>
+      <td>${c.phone || "-"}</td>
+      <td>${c.region || "-"}</td>
+      <td>${c.area_pyeong || "-"}</td>
+      <td>${c.budget || "-"}</td>
+      <td><span class="badge status-${c.status}">${c.status || "-"}</span></td>
+      <td>${c.source || "-"}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(c)})'>수정</button></td>
+    </tr>
+  `).join("");
+}
+
+function editRow(c) {
+  editingId = c.id;
+  const form = document.getElementById("customer-form");
+  form.name.value = c.name || "";
+  form.phone.value = c.phone || "";
+  form.region.value = c.region || "경주";
+  form.address.value = c.address || "";
+  form.area_pyeong.value = c.area_pyeong || "";
+  form.budget.value = c.budget || "";
+  form.source.value = c.source || "기타";
+  form.status.value = c.status || "문의";
+  form.memo.value = c.memo || "";
+  document.getElementById("form-title").textContent = c.name + " 님 정보 수정";
+  document.getElementById("submit-btn").textContent = "수정 저장";
+  document.getElementById("cancel-edit").style.display = "inline-flex";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("customer-form").reset();
+  document.getElementById("form-title").textContent = "새 고객·상담 등록";
+  document.getElementById("submit-btn").textContent = "등록하기";
+  document.getElementById("cancel-edit").style.display = "none";
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  loadList();
+
+  document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+  document.getElementById("customer-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      name: form.name.value,
+      phone: form.phone.value,
+      region: form.region.value,
+      address: form.address.value,
+      area_pyeong: form.area_pyeong.value,
+      budget: form.budget.value,
+      source: form.source.value,
+      status: form.status.value,
+      memo: form.memo.value
+    };
+
+    let result;
+    if (editingId) {
+      result = await sbClient.from("customers").update(payload).eq("id", editingId);
+    } else {
+      payload.created_by = auth.user.id;
+      result = await sbClient.from("customers").insert([payload]);
+    }
+    if (result.error) { alert("저장 실패: " + result.error.message); return; }
+    resetForm();
+    loadList();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정산·지급 관리 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="payments.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>정산·지급 관리</h1>
+    <p class="sub">계약금·중도금·잔금 입금, 인건비·업체비 지급 내역을 기록합니다. (대표만 접근 가능)</p>
+
+    <div id="locked" class="locked-notice" style="display:none;">
+      이 화면은 대표만 접근할 수 있습니다.
+    </div>
+
+    <div id="content" style="display:none;">
+      <div class="card">
+        <h2 id="form-title">새 정산·지급 기록</h2>
+        <form id="payment-form">
+          <input type="hidden" name="id">
+          <div class="form-grid cols-4">
+            <div><label>고객 *</label>
+              <select name="customer_id" required id="customer-select"></select>
+            </div>
+            <div><label>구분</label>
+              <select name="type">
+                <option value="계약금">계약금 (입금)</option>
+                <option value="중도금">중도금 (입금)</option>
+                <option value="잔금">잔금 (입금)</option>
+                <option value="인건비">인건비 (지급)</option>
+                <option value="업체비">업체비 (지급)</option>
+              </select>
+            </div>
+            <div><label>금액</label><input type="number" name="amount" placeholder="예: 10000000"></div>
+            <div><label>날짜</label><input type="date" name="paid_at"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div><label>받는 사람 / 지급 대상</label><input type="text" name="paid_to" placeholder="예: 김반장, ○○업체"></div>
+            <div style="grid-column:2/-1;"><label>메모</label><input type="text" name="memo"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-btn">저장</button>
+            <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>전체 정산·지급 내역</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>날짜</th><th>고객</th><th>구분</th><th>금액</th><th>대상</th><th>메모</th><th></th></tr>
+            </thead>
+            <tbody id="list-body">
+              <tr class="empty-row"><td colspan="7">불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+let editingId = null;
+let customersCache = [];
+
+async function loadCustomerOptions() {
+  const { data } = await sbClient.from("customers").select("id,name").order("created_at", { ascending: false });
+  customersCache = data || [];
+  const sel = document.getElementById("customer-select");
+  sel.innerHTML = customersCache.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+}
+function customerName(id) {
+  const c = customersCache.find(x => x.id === id);
+  return c ? c.name : "-";
+}
+
+async function loadList() {
+  const { data, error } = await sbClient.from("payments").select("*").order("paid_at", { ascending: false });
+  const tbody = document.getElementById("list-body");
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="7">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="7">등록된 정산 내역이 없습니다</td></tr>`; return; }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>${fmtDate(p.paid_at)}</td>
+      <td>${customerName(p.customer_id)}</td>
+      <td>${p.type || "-"}</td>
+      <td>${fmtMoney(p.amount)}</td>
+      <td>${p.paid_to || "-"}</td>
+      <td>${p.memo || "-"}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(p)})'>수정</button></td>
+    </tr>
+  `).join("");
+}
+
+function editRow(p) {
+  editingId = p.id;
+  const form = document.getElementById("payment-form");
+  form.customer_id.value = p.customer_id;
+  form.type.value = p.type || "계약금";
+  form.amount.value = p.amount || "";
+  form.paid_at.value = p.paid_at || "";
+  form.paid_to.value = p.paid_to || "";
+  form.memo.value = p.memo || "";
+  document.getElementById("form-title").textContent = "정산·지급 내역 수정";
+  document.getElementById("submit-btn").textContent = "수정 저장";
+  document.getElementById("cancel-edit").style.display = "inline-flex";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("payment-form").reset();
+  document.getElementById("form-title").textContent = "새 정산·지급 기록";
+  document.getElementById("submit-btn").textContent = "저장";
+  document.getElementById("cancel-edit").style.display = "none";
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+
+  if (auth.profile.role !== "owner") {
+    document.getElementById("locked").style.display = "block";
+    return;
+  }
+  document.getElementById("content").style.display = "block";
+
+  await loadCustomerOptions();
+  await loadList();
+
+  document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+  document.getElementById("payment-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      customer_id: form.customer_id.value,
+      type: form.type.value,
+      amount: form.amount.value || null,
+      paid_at: form.paid_at.value || null,
+      paid_to: form.paid_to.value,
+      memo: form.memo.value
+    };
+    let result;
+    if (editingId) {
+      result = await sbClient.from("payments").update(payload).eq("id", editingId);
+    } else {
+      payload.created_by = auth.user.id;
+      result = await sbClient.from("payments").insert([payload]);
+    }
+    if (result.error) { alert("저장 실패: " + result.error.message); return; }
+    resetForm();
+    loadList();
+  });
+})();
+</script>
+</body>
+</html>
