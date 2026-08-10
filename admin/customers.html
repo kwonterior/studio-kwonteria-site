@@ -98,9 +98,19 @@ async function loadList() {
       <td>${c.budget || "-"}</td>
       <td><span class="badge status-${c.status}">${c.status || "-"}</span></td>
       <td>${c.source || "-"}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(c)})'>수정</button></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(c)})'>수정</button>
+        <button class="btn btn-ghost btn-sm" style="color:#c0392b;" onclick="deleteRow(${c.id}, ${JSON.stringify(c.name || "")})">삭제</button>
+      </td>
     </tr>
   `).join("");
+}
+
+async function deleteRow(id, name) {
+  if (!confirm(`"${name}" 고객·상담 정보를 삭제하시겠습니까?\n\n이 고객과 연결된 견적서·정산·자재발주·공정표 일정도 함께 삭제되며, 되돌릴 수 없습니다.`)) return;
+  const { error } = await sbClient.from("customers").delete().eq("id", id);
+  if (error) { alert("삭제 실패: " + error.message); return; }
+  loadList();
 }
 
 function editRow(c) {
