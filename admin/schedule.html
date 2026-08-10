@@ -28,12 +28,26 @@
         <div class="form-grid" style="margin-top:12px;">
           <div style="grid-column:1/-1;"><label>내용 *</label><input type="text" name="content" required placeholder="예: 타일, 필름, 도배 / 또는 메모 내용"></div>
         </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div><label class="check-label"><input type="checkbox" name="confirmed"> 작업자 확정됨</label></div>
+        </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
           <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
           <button type="button" class="btn btn-ghost" id="delete-btn" style="display:none;color:#c0392b;">삭제</button>
         </div>
       </form>
+
+      <div class="quickadd-head">
+        <span class="remarklabel" style="margin:0;">빠른 추가 <small style="font-weight:400;">(날짜를 먼저 선택하면, 눌렀을 때 바로 등록됩니다)</small></span>
+        <button type="button" class="btn btn-ghost btn-sm" id="cat-edit-toggle">카테고리 편집</button>
+      </div>
+      <div class="quickadd-grid" id="quickadd-grid"></div>
+      <div id="cat-add-row" style="display:none;margin-top:10px;display:flex;gap:8px;align-items:center;">
+        <input type="color" id="new-cat-color" value="#888888" style="width:40px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px;">
+        <input type="text" id="new-cat-name" placeholder="새 카테고리 이름" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:14px;">
+        <button type="button" class="btn btn-primary btn-sm" id="new-cat-add">추가</button>
+      </div>
     </div>
 
     <div class="card">
@@ -68,6 +82,8 @@
 <script>
 let editingId = null;
 let customersCache = [];
+let categoriesCache = [];
+let catEditMode = false;
 let viewYear, viewMonth; // viewMonth: 1-12
 let selectedCustomerId = null;
 
@@ -106,6 +122,48 @@ function customerName(id) {
   if (!id) return null;
   const c = customersCache.find(x => x.id === id);
   return c ? c.name : "-";
+}
+
+async function loadCategories() {
+  const { data } = await sbClient.from("schedule_categories").select("*").order("sort_order", { ascending: true });
+  categoriesCache = data || [];
+  renderQuickAdd();
+}
+
+function renderQuickAdd() {
+  const grid = document.getElementById("quickadd-grid");
+  grid.innerHTML = categoriesCache.map(cat => `
+    <button type="button" class="qa-chip" data-id="${cat.id}" style="border-color:${cat.color};color:${cat.color};">
+      <span class="dot" style="background:${cat.color}"></span>${cat.name}
+      ${catEditMode ? `<span class="qa-del" data-id="${cat.id}">×</span>` : ""}
+    </button>
+  `).join("");
+
+  grid.querySelectorAll(".qa-chip").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      if (e.target.classList.contains("qa-del")) return; // handled separately
+      if (catEditMode) return;
+      const cat = categoriesCache.find(c => c.id === Number(btn.dataset.id));
+      const form = document.getElementById("schedule-form");
+      form.content.value = cat.name;
+      if (form.item_date.value) {
+        document.getElementById("schedule-form").requestSubmit();
+      } else {
+        alert("먼저 날짜를 선택해주세요. 내용칸에 \"" + cat.name + "\"을 넣어뒀어요.");
+      }
+    });
+  });
+  grid.querySelectorAll(".qa-del").forEach(el => {
+    el.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = Number(el.dataset.id);
+      const cat = categoriesCache.find(c => c.id === id);
+      if (!confirm(`"${cat.name}" 카테고리를 삭제하시겠습니까?`)) return;
+      const { error } = await sbClient.from("schedule_categories").delete().eq("id", id);
+      if (error) { alert("삭제 실패: " + error.message); return; }
+      loadCategories();
+    });
+  });
 }
 
 function renderFilters(){
@@ -214,7 +272,10 @@ async function loadAndRenderCalendar() {
       const label = cname ? `${cname} · ${it.content}` : it.content;
       const cls = cname ? "cal-item" : "cal-item issue";
       const style = color ? ` style="background:${color}22;color:${color};"` : "";
-      return `<div class="${cls}" data-id="${it.id}"${style}>${label}</div>`;
+      const confirmMark = it.customer_id
+        ? `<span class="confirm-toggle ${it.confirmed ? "on" : ""}" data-toggle-id="${it.id}" title="${it.confirmed ? "확정됨 (눌러서 취소)" : "미확정 (눌러서 확정)"}">${it.confirmed ? "●" : "○"}</span>`
+        : "";
+      return `<div class="${cls}" data-id="${it.id}"${style}>${confirmMark}${label}</div>`;
     }).join("");
     const dow = new Date(viewYear, viewMonth - 1, d).getDay();
     let daynumColor = "";
@@ -231,10 +292,22 @@ async function loadAndRenderCalendar() {
   grid.innerHTML = html;
 
   grid.querySelectorAll(".cal-item").forEach(el => {
-    el.addEventListener("click", () => {
+    el.addEventListener("click", (e) => {
+      if (e.target.classList.contains("confirm-toggle")) return;
       const id = Number(el.dataset.id);
       const item = (data || []).find(x => x.id === id);
       if (item) setForm(null, item);
+    });
+  });
+  grid.querySelectorAll(".confirm-toggle").forEach(el => {
+    el.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = Number(el.dataset.toggleId);
+      const item = (data || []).find(x => x.id === id);
+      if (!item) return;
+      const { error } = await sbClient.from("schedule_items").update({ confirmed: !item.confirmed }).eq("id", id);
+      if (error) { alert("변경 실패: " + error.message); return; }
+      loadAndRenderCalendar();
     });
   });
   grid.querySelectorAll(".cal-add-link").forEach(el => {
@@ -249,6 +322,7 @@ function setForm(dateStr, item) {
   form.item_date.value = dateStr || item?.item_date || "";
   form.customer_id.value = item?.customer_id || "";
   form.content.value = item?.content || "";
+  form.confirmed.checked = item?.confirmed || false;
   document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
   document.getElementById("submit-btn").textContent = editingId ? "수정 저장" : "등록하기";
   document.getElementById("cancel-edit").style.display = editingId || dateStr ? "inline-flex" : "none";
@@ -273,7 +347,26 @@ function shiftMonth(delta) {
   viewMonth = now.getMonth() + 1;
 
   await loadCustomerOptions();
+  await loadCategories();
   await loadAndRenderCalendar();
+
+  document.getElementById("cat-edit-toggle").addEventListener("click", () => {
+    catEditMode = !catEditMode;
+    document.getElementById("cat-edit-toggle").textContent = catEditMode ? "완료" : "카테고리 편집";
+    document.getElementById("cat-add-row").style.display = catEditMode ? "flex" : "none";
+    renderQuickAdd();
+  });
+  document.getElementById("new-cat-add").addEventListener("click", async () => {
+    const nameInput = document.getElementById("new-cat-name");
+    const colorInput = document.getElementById("new-cat-color");
+    const name = nameInput.value.trim();
+    if (!name) { alert("카테고리 이름을 입력해주세요."); return; }
+    const sortOrder = categoriesCache.length ? Math.max(...categoriesCache.map(c => c.sort_order || 0)) + 1 : 1;
+    const { error } = await sbClient.from("schedule_categories").insert([{ name, color: colorInput.value, sort_order: sortOrder }]);
+    if (error) { alert("추가 실패: " + error.message); return; }
+    nameInput.value = "";
+    loadCategories();
+  });
 
   document.getElementById("prev-month").addEventListener("click", () => shiftMonth(-1));
   document.getElementById("next-month").addEventListener("click", () => shiftMonth(1));
@@ -300,7 +393,8 @@ function shiftMonth(delta) {
     const payload = {
       item_date: form.item_date.value,
       customer_id: form.customer_id.value || null,
-      content: form.content.value
+      content: form.content.value,
+      confirmed: form.confirmed.checked
     };
     let result;
     if (editingId) {
