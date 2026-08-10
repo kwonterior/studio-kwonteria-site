@@ -31,12 +31,15 @@
         <div class="title" id="cal-title">-</div>
         <div style="width:180px;"></div>
       </div>
-      <div class="cal-grid" id="cal-dow-row">
-        <div class="cal-dow" style="color:#c0392b;">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
-        <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow" style="color:#2b5fc0;">토</div>
+      <div id="daygrid-view">
+        <div class="cal-grid" id="cal-dow-row">
+          <div class="cal-dow" style="color:#c0392b;">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+          <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow" style="color:#2b5fc0;">토</div>
+        </div>
+        <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
       </div>
-      <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
-      <p class="sub" style="margin-top:10px;margin-bottom:0;">날짜의 "+ 추가"를 누르거나 기존 일정을 누르면 아래에 입력창이 나타납니다.</p>
+      <div id="table-view" style="display:none;"></div>
+      <p class="sub" style="margin-top:10px;margin-bottom:0;">날짜를 누르면 (또는 기존 일정을 누르면) 아래에 입력창이 나타납니다.</p>
     </div>
 
     <div id="entry-panel" style="display:none;">
@@ -281,19 +284,28 @@ async function loadAndRenderCalendar() {
   const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
   const monthEnd = toISO(viewYear, viewMonth, daysInMonth);
 
-  const { data, error } = await sbClient
+  const { data } = await sbClient
     .from("schedule_items")
     .select("*")
     .gte("item_date", monthStart)
     .lte("item_date", monthEnd)
     .order("id", { ascending: true });
 
-  const itemsByDate = {};
-  (data || []).forEach(it => {
-    (itemsByDate[it.item_date] = itemsByDate[it.item_date] || []).push(it);
-  });
+  document.getElementById("daygrid-view").style.display = selectedCustomerId === null ? "none" : "block";
+  document.getElementById("table-view").style.display = selectedCustomerId === null ? "block" : "none";
 
-  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay(); // 0=Sun
+  if (selectedCustomerId === null) {
+    renderSiteTable(data || [], daysInMonth);
+  } else {
+    renderDayGrid(data || [], daysInMonth);
+  }
+}
+
+function renderDayGrid(data, daysInMonth) {
+  const itemsByDate = {};
+  data.forEach(it => { (itemsByDate[it.item_date] = itemsByDate[it.item_date] || []).push(it); });
+
+  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay();
   const grid = document.getElementById("cal-grid");
   const todayStr = new Date().toISOString().slice(0, 10);
   let html = "";
@@ -302,20 +314,12 @@ async function loadAndRenderCalendar() {
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = toISO(viewYear, viewMonth, d);
-    const allItems = itemsByDate[dateStr] || [];
-    const shown = selectedCustomerId === null ? allItems : allItems.filter(it => it.customer_id === selectedCustomerId);
+    const shown = (itemsByDate[dateStr] || []).filter(it => it.customer_id === selectedCustomerId);
     const isToday = dateStr === todayStr ? "today" : "";
-    const dim = selectedCustomerId !== null && shown.length === 0 ? "dim" : "";
-    let itemsHtml = shown.map(it => {
-      const cname = customerName(it.customer_id);
-      const color = it.customer_id ? colorFor(it.customer_id) : null;
-      const label = cname ? `${cname} · ${it.content}` : it.content;
-      const cls = cname ? "cal-item" : "cal-item issue";
-      const style = color ? ` style="background:${color}22;color:${color};"` : "";
-      const confirmMark = it.customer_id
-        ? `<span class="confirm-toggle ${it.confirmed ? "on" : ""}" data-toggle-id="${it.id}" title="${it.confirmed ? "확정됨 (눌러서 취소)" : "미확정 (눌러서 확정)"}">${it.confirmed ? "●" : "○"}</span>`
-        : "";
-      return `<div class="${cls}" data-id="${it.id}"${style}>${confirmMark}${label}</div>`;
+    const dim = shown.length === 0 ? "dim" : "";
+    const itemsHtml = shown.map(it => {
+      const confirmMark = `<span class="confirm-toggle ${it.confirmed ? "on" : ""}" data-toggle-id="${it.id}" title="${it.confirmed ? "확정됨 (눌러서 취소)" : "미확정 (눌러서 확정)"}">${it.confirmed ? "●" : "○"}</span>`;
+      return `<div class="cal-item" data-id="${it.id}">${confirmMark}${it.content}</div>`;
     }).join("");
     const dow = new Date(viewYear, viewMonth - 1, d).getDay();
     let daynumColor = "";
@@ -335,7 +339,7 @@ async function loadAndRenderCalendar() {
     el.addEventListener("click", (e) => {
       if (e.target.classList.contains("confirm-toggle")) return;
       const id = Number(el.dataset.id);
-      const item = (data || []).find(x => x.id === id);
+      const item = data.find(x => x.id === id);
       if (item) openEntryPanel(null, item);
     });
   });
@@ -343,7 +347,7 @@ async function loadAndRenderCalendar() {
     el.addEventListener("click", async (e) => {
       e.stopPropagation();
       const id = Number(el.dataset.toggleId);
-      const item = (data || []).find(x => x.id === id);
+      const item = data.find(x => x.id === id);
       if (!item) return;
       const { error } = await sbClient.from("schedule_items").update({ confirmed: !item.confirmed }).eq("id", id);
       if (error) { alert("변경 실패: " + error.message); return; }
@@ -352,6 +356,79 @@ async function loadAndRenderCalendar() {
   });
   grid.querySelectorAll(".cal-add-link").forEach(el => {
     el.addEventListener("click", () => openEntryPanel(el.dataset.date, null));
+  });
+}
+
+function renderSiteTable(data, daysInMonth) {
+  const activeSiteIds = [...new Set(data.filter(it => it.customer_id).map(it => it.customer_id))];
+  const sites = customersCache.filter(c => activeSiteIds.includes(c.id))
+    .sort((a, b) => activeSiteIds.indexOf(a.id) - activeSiteIds.indexOf(b.id));
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  const itemsBy = {};
+  data.forEach(it => {
+    const key = `${it.customer_id || "issue"}|${it.item_date}`;
+    (itemsBy[key] = itemsBy[key] || []).push(it);
+  });
+
+  let headHtml = `<th class="sitecol">현장</th>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = toISO(viewYear, viewMonth, d);
+    const dow = new Date(viewYear, viewMonth - 1, d).getDay();
+    let c = "";
+    if (isHoliday(dateStr) || dow === 0) c = "color:#c0392b;";
+    else if (dow === 6) c = "color:#2b5fc0;";
+    const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
+    headHtml += `<th style="${c}${todayBg}">${d}</th>`;
+  }
+
+  function renderCells(key, color) {
+    let cells = "";
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = toISO(viewYear, viewMonth, d);
+      const items = itemsBy[`${key}|${dateStr}`] || [];
+      const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
+      const chips = items.map(it =>
+        `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.confirmed ? "● " : ""}${it.content}</span>`
+      ).join("");
+      cells += `<td style="${todayBg}" data-date="${dateStr}" data-site="${key === "issue" ? "" : key}">${chips}</td>`;
+    }
+    return cells;
+  }
+
+  let bodyHtml = sites.map(site => {
+    const color = colorFor(site.id);
+    return `<tr><td class="sitecol" data-id="${site.id}" style="color:${color};">${site.name}</td>${renderCells(site.id, color)}</tr>`;
+  }).join("");
+  bodyHtml += `<tr><td class="sitecol" style="color:var(--sub);">이슈</td>${renderCells("issue", "#71695f")}</tr>`;
+
+  document.getElementById("table-view").innerHTML = `
+    <div class="sched-table-wrap"><table class="sched-table">
+      <thead><tr>${headHtml}</tr></thead>
+      <tbody>${bodyHtml}</tbody>
+    </table></div>`;
+
+  document.querySelectorAll(".sched-table td.sitecol[data-id]").forEach(el => {
+    el.addEventListener("click", () => {
+      selectedCustomerId = Number(el.dataset.id);
+      renderFilters();
+      renderSitePanel();
+      loadAndRenderCalendar();
+    });
+  });
+  document.querySelectorAll(".cell-chip").forEach(el => {
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const item = data.find(x => x.id === Number(el.dataset.id));
+      if (item) openEntryPanel(null, item);
+    });
+  });
+  document.querySelectorAll(".sched-table td[data-date]").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (e.target.classList.contains("cell-chip")) return;
+      openEntryPanel(el.dataset.date, null);
+      if (el.dataset.site) document.getElementById("customer-select").value = el.dataset.site;
+    });
   });
 }
 

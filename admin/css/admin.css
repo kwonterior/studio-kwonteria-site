@@ -154,6 +154,25 @@ tbody tr:hover{background:#faf8f4;}
 .savedhint.show{opacity:1;}
 .cal-cell.dim{opacity:.35;}
 
+/* 전체보기 표(엑셀 스타일) */
+.sched-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+.sched-table{border-collapse:collapse;min-width:max-content;width:100%;}
+.sched-table th,.sched-table td{
+  border:1px solid var(--line);padding:6px 7px;font-size:12px;text-align:center;
+  white-space:nowrap;min-width:38px;
+}
+.sched-table thead th{background:var(--card);font-weight:700;color:var(--sub);}
+.sched-table th.sitecol,.sched-table td.sitecol{
+  position:sticky;left:0;background:var(--card);z-index:1;text-align:left;
+  font-weight:700;white-space:nowrap;border-right:2px solid var(--line);cursor:pointer;padding-left:10px;
+}
+.sched-table td.sitecol:hover{background:var(--bg);}
+.sched-table td{cursor:pointer;}
+.cell-chip{
+  display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;
+  margin:1px;cursor:pointer;
+}
+
 /* 확정/미확정 토글 */
 .check-label{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer;}
 .confirm-toggle{cursor:pointer;font-size:11px;margin-right:4px;color:var(--sub);}
