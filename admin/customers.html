@@ -100,7 +100,7 @@ async function loadList() {
       <td>${c.source || "-"}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(c)})'>수정</button>
-        <button class="btn btn-ghost btn-sm" style="color:#c0392b;" onclick="deleteRow(${c.id}, ${JSON.stringify(c.name || "")})">삭제</button>
+        <button class="btn btn-ghost btn-sm" style="color:#c0392b;" onclick='deleteRow(${c.id}, ${JSON.stringify(c.name || "")})'>삭제</button>
       </td>
     </tr>
   `).join("");
