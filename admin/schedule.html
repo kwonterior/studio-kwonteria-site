@@ -55,8 +55,8 @@
         <div style="width:180px;"></div>
       </div>
       <div class="cal-grid" id="cal-dow-row">
-        <div class="cal-dow">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
-        <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow">토</div>
+        <div class="cal-dow" style="color:#c0392b;">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+        <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow" style="color:#2b5fc0;">토</div>
       </div>
       <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
     </div>
@@ -71,8 +71,25 @@ let customersCache = [];
 let viewYear, viewMonth; // viewMonth: 1-12
 let selectedCustomerId = null;
 
-const SITE_COLORS = ["#b56a4a","#3b6fb0","#4f9a5b","#c99a2e","#2f8f82","#8f5f3a","#c76b8a","#6b7280","#7a5fb0","#3aa0a0","#a85a8f"];
+// 색상끼리 최대한 겹치지 않도록 색상환에서 고르게 떨어진 12색
+const SITE_COLORS = ["#4E79A7","#F28E2B","#59A14F","#E15759","#B07AA1","#9C755F","#76B7B2","#D37295","#EDC948","#6B6ECF","#BAB0AC","#B5544A"];
 function colorFor(id){ return SITE_COLORS[id % SITE_COLORS.length]; }
+
+// 2026년 대한민국 공휴일(대체공휴일 포함, YYYY-MM-DD)
+const HOLIDAYS_2026 = new Set([
+  "2026-01-01", // 신정
+  "2026-02-16","2026-02-17","2026-02-18", // 설날 연휴
+  "2026-03-01","2026-03-02", // 삼일절 + 대체공휴일
+  "2026-05-05", // 어린이날
+  "2026-05-24","2026-05-25", // 부처님오신날 + 대체공휴일
+  "2026-06-06", // 현충일
+  "2026-08-15","2026-08-17", // 광복절 + 대체공휴일
+  "2026-09-24","2026-09-25","2026-09-26", // 추석 연휴
+  "2026-10-03","2026-10-05", // 개천절 + 대체공휴일
+  "2026-10-09", // 한글날
+  "2026-12-25", // 성탄절
+]);
+function isHoliday(dateStr){ return HOLIDAYS_2026.has(dateStr); }
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 function toISO(y, m, d) { return `${y}-${pad2(m)}-${pad2(d)}`; }
@@ -199,9 +216,13 @@ async function loadAndRenderCalendar() {
       const style = color ? ` style="background:${color}22;color:${color};"` : "";
       return `<div class="${cls}" data-id="${it.id}"${style}>${label}</div>`;
     }).join("");
+    const dow = new Date(viewYear, viewMonth - 1, d).getDay();
+    let daynumColor = "";
+    if (isHoliday(dateStr) || dow === 0) daynumColor = "#c0392b";
+    else if (dow === 6) daynumColor = "#2b5fc0";
     html += `
       <div class="cal-cell ${isToday} ${dim}" data-date="${dateStr}">
-        <div class="daynum">${d}</div>
+        <div class="daynum"${daynumColor ? ` style="color:${daynumColor};"` : ""}>${d}</div>
         ${itemsHtml}
         <div class="cal-add-link" data-date="${dateStr}">+ 추가</div>
       </div>`;
