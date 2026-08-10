@@ -130,14 +130,42 @@ async function loadCategories() {
   renderQuickAdd();
 }
 
+let dragSrcId = null;
+
 function renderQuickAdd() {
   const grid = document.getElementById("quickadd-grid");
   grid.innerHTML = categoriesCache.map(cat => `
-    <button type="button" class="qa-chip" data-id="${cat.id}" style="border-color:${cat.color};color:${cat.color};">
+    <button type="button" class="qa-chip${catEditMode ? " draggable" : ""}" data-id="${cat.id}"
+      ${catEditMode ? 'draggable="true"' : ""} style="border-color:${cat.color};color:${cat.color};">
       <span class="dot" style="background:${cat.color}"></span>${cat.name}
       ${catEditMode ? `<span class="qa-del" data-id="${cat.id}">×</span>` : ""}
     </button>
   `).join("");
+
+  if (catEditMode) {
+    grid.querySelectorAll(".qa-chip").forEach(btn => {
+      btn.addEventListener("dragstart", () => {
+        dragSrcId = Number(btn.dataset.id);
+        btn.classList.add("dragging");
+      });
+      btn.addEventListener("dragend", () => btn.classList.remove("dragging"));
+      btn.addEventListener("dragover", (e) => e.preventDefault());
+      btn.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        const targetId = Number(btn.dataset.id);
+        if (dragSrcId === null || dragSrcId === targetId) return;
+        const srcIdx = categoriesCache.findIndex(c => c.id === dragSrcId);
+        const tgtIdx = categoriesCache.findIndex(c => c.id === targetId);
+        const [moved] = categoriesCache.splice(srcIdx, 1);
+        categoriesCache.splice(tgtIdx, 0, moved);
+        categoriesCache.forEach((c, i) => c.sort_order = i + 1);
+        renderQuickAdd();
+        await Promise.all(categoriesCache.map(c =>
+          sbClient.from("schedule_categories").update({ sort_order: c.sort_order }).eq("id", c.id)
+        ));
+      });
+    });
+  }
 
   grid.querySelectorAll(".qa-chip").forEach(btn => {
     btn.addEventListener("click", async (e) => {

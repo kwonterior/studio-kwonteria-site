@@ -168,3 +168,5 @@ tbody tr:hover{background:#faf8f4;}
 }
 .qa-chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .qa-chip .qa-del{margin-left:2px;color:#c0392b;font-weight:800;cursor:pointer;padding:0 2px;}
+.qa-chip.draggable{cursor:grab;}
+.qa-chip.dragging{opacity:.35;}
