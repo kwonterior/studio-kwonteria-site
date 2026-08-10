@@ -27,8 +27,16 @@
               <option value="기타">기타</option>
             </select>
           </div>
-          <div><label>주소</label><input type="text" name="address"></div>
-          <div><label>평수</label><input type="text" name="area_pyeong" placeholder="예: 30평"></div>
+          <div><label>평수</label>
+            <select name="area_pyeong">
+              <option value="20평대">20평대</option>
+              <option value="30평대">30평대</option>
+              <option value="40평대">40평대</option>
+              <option value="50평대">50평대</option>
+              <option value="60평대">60평대</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
           <div><label>예산</label><input type="text" name="budget" placeholder="예: 5000만원"></div>
           <div><label>유입경로</label>
             <select name="source">
@@ -53,7 +61,10 @@
           </div>
         </div>
         <div class="form-grid" style="margin-top:12px;">
-          <div style="grid-column:1/-1;"><label>메모</label><textarea name="memo" rows="2"></textarea></div>
+          <div style="grid-column:1/-1;">
+            <label>메모 <small style="font-weight:400;color:var(--sub);">(주소, 공동현관 비번, 세대 비번, 기타 특이사항을 줄바꿔서 적어주세요)</small></label>
+            <textarea name="memo" rows="6" style="line-height:1.6;" placeholder="예:&#10;경상북도 포항시 남구 새천년대로 306&#10;공동현관 #2123 / 세대 3406*"></textarea>
+          </div>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
@@ -119,7 +130,6 @@ function editRow(c) {
   form.name.value = c.name || "";
   form.phone.value = c.phone || "";
   form.region.value = c.region || "경주";
-  form.address.value = c.address || "";
   form.area_pyeong.value = c.area_pyeong || "";
   form.budget.value = c.budget || "";
   form.source.value = c.source || "기타";
@@ -153,7 +163,6 @@ function resetForm() {
       name: form.name.value,
       phone: form.phone.value,
       region: form.region.value,
-      address: form.address.value,
       area_pyeong: form.area_pyeong.value,
       budget: form.budget.value,
       source: form.source.value,

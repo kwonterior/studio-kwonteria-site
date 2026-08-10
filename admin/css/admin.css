@@ -185,8 +185,9 @@ tbody tr:hover{background:#faf8f4;}
 .infoitem .v{font-size:15px;font-weight:700;color:var(--ink);}
 
 .notebox{
-  margin-top:16px;padding:12px 14px;background:var(--bg);border-radius:8px;
-  font-size:13.5px;color:var(--sub);border-left:3px solid var(--line);line-height:1.55;
+  margin-top:16px;padding:14px 16px;background:var(--bg);border-radius:8px;
+  font-size:13.5px;color:var(--ink);border-left:3px solid var(--accent);line-height:1.7;
+  white-space:pre-wrap;word-break:break-word;
 }
 
 .quotebox2{
