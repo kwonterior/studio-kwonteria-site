@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공정표 공유용 보기</title>
+<link rel="stylesheet" href="css/admin.css">
+<style>
+body{padding:0;}
+.sharewrap{max-width:100%;padding:24px 28px 60px;}
+.sharehead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+.sharehead .title{font-size:20px;font-weight:800;}
+.sharehead .sub{font-size:13px;color:var(--sub);margin-top:3px;}
+.sharetools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.sharetools .modebtn{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:13.5px;font-weight:700;cursor:pointer;}
+.sharetools .modebtn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+.vtable td, .vtable th{min-width:64px;}
+.vtable th.sitecol, .vtable td.sitecol{min-width:70px;text-align:center;}
+.vtable td.datecol, .vtable th.datecol{
+  position:sticky;left:0;background:var(--card);z-index:1;text-align:left;
+  font-weight:700;white-space:nowrap;border-right:2px solid var(--line);padding-left:10px;
+}
+
+@media print{
+  .sharetools, .no-print{display:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body data-page="schedule-share.html">
+<div class="sharewrap">
+  <div class="sharehead">
+    <div>
+      <div class="title" id="share-title">공정표</div>
+      <div class="sub">화면을 그대로 캡처해서 작업팀에 공유하세요</div>
+    </div>
+    <div class="sharetools no-print">
+      <a href="schedule.html" class="btn btn-ghost btn-sm">‹ 관리자페이지로</a>
+      <button class="btn btn-ghost btn-sm" id="prev-month">이전달</button>
+      <button class="btn btn-ghost btn-sm" id="today-btn">이번달</button>
+      <button class="btn btn-ghost btn-sm" id="next-month">다음달</button>
+      <button class="modebtn active" id="mode-h">가로형 (현장→행)</button>
+      <button class="modebtn" id="mode-v">세로형 (날짜→행)</button>
+      <button class="btn btn-primary btn-sm" id="print-btn">인쇄/PDF</button>
+    </div>
+  </div>
+
+  <div id="table-area"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+let viewYear, viewMonth, mode = "h";
+let customersCache = [];
+
+const SITE_COLORS = ["#4E79A7","#F28E2B","#59A14F","#E15759","#B07AA1","#9C755F","#76B7B2","#D37295","#EDC948","#6B6ECF","#BAB0AC","#B5544A"];
+function colorFor(id){ return SITE_COLORS[id % SITE_COLORS.length]; }
+const DOW_LABELS = ["일","월","화","수","목","금","토"];
+const HOLIDAYS_2026 = new Set([
+  "2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-01","2026-03-02",
+  "2026-05-05","2026-05-24","2026-05-25","2026-06-06","2026-08-15","2026-08-17",
+  "2026-09-24","2026-09-25","2026-09-26","2026-10-03","2026-10-05","2026-10-09","2026-12-25",
+]);
+function isHoliday(dateStr){ return HOLIDAYS_2026.has(dateStr); }
+function pad2(n){ return String(n).padStart(2, "0"); }
+function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+
+async function loadCustomers(){
+  const { data } = await sbClient.from("customers").select("id,name").order("created_at", { ascending:false });
+  customersCache = data || [];
+}
+
+async function render(){
+  document.getElementById("share-title").textContent = `${viewYear}년 ${viewMonth}월 공정표`;
+  const monthStart = toISO(viewYear, viewMonth, 1);
+  const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const monthEnd = toISO(viewYear, viewMonth, daysInMonth);
+  const { data } = await sbClient.from("schedule_items").select("*")
+    .gte("item_date", monthStart).lte("item_date", monthEnd).order("id",{ascending:true});
+  const items = data || [];
+
+  const activeSiteIds = [...new Set(items.filter(it=>it.customer_id).map(it=>it.customer_id))];
+  const sites = customersCache.filter(c=>activeSiteIds.includes(c.id));
+  const hasIssue = items.some(it=>!it.customer_id);
+
+  const itemsByKey = {};
+  items.forEach(it=>{
+    const key = `${it.item_date}|${it.customer_id || "issue"}`;
+    (itemsByKey[key]=itemsByKey[key]||[]).push(it);
+  });
+
+  const todayStr = new Date().toISOString().slice(0,10);
+
+  function chip(it, color){
+    return `<span class="cell-chip" style="background:${color}22;color:${color};">${it.confirmed?"● ":""}${it.content}</span>`;
+  }
+
+  if (mode === "h") {
+    let head = `<th class="sitecol">현장</th>`;
+    for (let d=1; d<=daysInMonth; d++){
+      const dateStr = toISO(viewYear, viewMonth, d);
+      const dow = new Date(viewYear, viewMonth-1, d).getDay();
+      let c = "";
+      if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
+      else if (dow===6) c = "color:#2b5fc0;";
+      const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
+      head += `<th style="${c}${tb}">${d}<br><span style="font-weight:400;font-size:10px;">${DOW_LABELS[dow]}</span></th>`;
+    }
+    let body = sites.map(site=>{
+      const color = colorFor(site.id);
+      let cells = "";
+      for (let d=1; d<=daysInMonth; d++){
+        const dateStr = toISO(viewYear, viewMonth, d);
+        const its = itemsByKey[`${dateStr}|${site.id}`] || [];
+        const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
+        cells += `<td style="${tb}">${its.map(it=>chip(it,color)).join("")}</td>`;
+      }
+      return `<tr><td class="sitecol" style="color:${color};">${site.name}</td>${cells}</tr>`;
+    }).join("");
+    if (hasIssue) {
+      let cells = "";
+      for (let d=1; d<=daysInMonth; d++){
+        const dateStr = toISO(viewYear, viewMonth, d);
+        const its = itemsByKey[`${dateStr}|issue`] || [];
+        const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
+        cells += `<td style="${tb}">${its.map(it=>chip(it,"#71695f")).join("")}</td>`;
+      }
+      body += `<tr><td class="sitecol" style="color:var(--sub);">특이사항</td>${cells}</tr>`;
+    }
+    document.getElementById("table-area").innerHTML = `
+      <div class="sched-table-wrap"><table class="sched-table">
+        <thead><tr>${head}</tr></thead><tbody>${body}</tbody>
+      </table></div>`;
+  } else {
+    let head = `<th class="datecol">날짜</th>` + sites.map(s=>`<th style="color:${colorFor(s.id)};">${s.name}</th>`).join("");
+    if (hasIssue) head += `<th style="color:var(--sub);">특이사항</th>`;
+    let body = "";
+    for (let d=1; d<=daysInMonth; d++){
+      const dateStr = toISO(viewYear, viewMonth, d);
+      const dow = new Date(viewYear, viewMonth-1, d).getDay();
+      let c = "";
+      if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
+      else if (dow===6) c = "color:#2b5fc0;";
+      const rowBg = dateStr===todayStr ? "background:#eaf5ea;" : "";
+      let cells = sites.map(site=>{
+        const its = itemsByKey[`${dateStr}|${site.id}`] || [];
+        return `<td style="${rowBg}">${its.map(it=>chip(it,colorFor(site.id))).join("")}</td>`;
+      }).join("");
+      if (hasIssue) {
+        const its = itemsByKey[`${dateStr}|issue`] || [];
+        cells += `<td style="${rowBg}">${its.map(it=>chip(it,"#71695f")).join("")}</td>`;
+      }
+      body += `<tr><td class="datecol" style="${c}${rowBg}">${d} (${DOW_LABELS[dow]})</td>${cells}</tr>`;
+    }
+    document.getElementById("table-area").innerHTML = `
+      <div class="sched-table-wrap"><table class="sched-table vtable">
+        <thead><tr>${head}</tr></thead><tbody>${body}</tbody>
+      </table></div>`;
+  }
+}
+
+function shiftMonth(delta){
+  viewMonth += delta;
+  if (viewMonth>12){viewMonth=1;viewYear++;}
+  if (viewMonth<1){viewMonth=12;viewYear--;}
+  render();
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth() + 1;
+
+  await loadCustomers();
+  await render();
+
+  document.getElementById("prev-month").addEventListener("click", ()=>shiftMonth(-1));
+  document.getElementById("next-month").addEventListener("click", ()=>shiftMonth(1));
+  document.getElementById("today-btn").addEventListener("click", ()=>{
+    const n = new Date();
+    viewYear = n.getFullYear();
+    viewMonth = n.getMonth()+1;
+    render();
+  });
+  document.getElementById("mode-h").addEventListener("click", ()=>{
+    mode = "h";
+    document.getElementById("mode-h").classList.add("active");
+    document.getElementById("mode-v").classList.remove("active");
+    render();
+  });
+  document.getElementById("mode-v").addEventListener("click", ()=>{
+    mode = "v";
+    document.getElementById("mode-v").classList.add("active");
+    document.getElementById("mode-h").classList.remove("active");
+    render();
+  });
+  document.getElementById("print-btn").addEventListener("click", ()=>window.print());
+})();
+</script>
+</body>
+</html>
