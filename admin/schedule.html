@@ -37,6 +37,14 @@
     </div>
 
     <div class="card">
+      <h2>현장 보기</h2>
+      <p class="sub" style="margin-bottom:14px;">현장을 누르면 그 현장 일정만 달력에 강조되고, 진행률과 비고를 볼 수 있어요</p>
+      <div class="filterrow" id="site-filters"></div>
+    </div>
+
+    <div id="site-panel"></div>
+
+    <div class="card">
       <div class="cal-header">
         <div class="cal-nav">
           <button class="btn btn-ghost btn-sm" id="prev-month">이전달</button>
@@ -61,16 +69,21 @@
 let editingId = null;
 let customersCache = [];
 let viewYear, viewMonth; // viewMonth: 1-12
+let selectedCustomerId = null;
+
+const SITE_COLORS = ["#b56a4a","#3b6fb0","#4f9a5b","#c99a2e","#2f8f82","#8f5f3a","#c76b8a","#6b7280","#7a5fb0","#3aa0a0","#a85a8f"];
+function colorFor(id){ return SITE_COLORS[id % SITE_COLORS.length]; }
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 function toISO(y, m, d) { return `${y}-${pad2(m)}-${pad2(d)}`; }
 
 async function loadCustomerOptions() {
-  const { data } = await sbClient.from("customers").select("id,name").order("created_at", { ascending: false });
+  const { data } = await sbClient.from("customers").select("id,name,remark").order("created_at", { ascending: false });
   customersCache = data || [];
   const sel = document.getElementById("customer-select");
   sel.innerHTML = `<option value="">이슈 / 메모 (현장 없음)</option>` +
     customersCache.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  renderFilters();
 }
 function customerName(id) {
   if (!id) return null;
@@ -78,20 +91,74 @@ function customerName(id) {
   return c ? c.name : "-";
 }
 
-function setForm(dateStr, item) {
-  const form = document.getElementById("schedule-form");
-  form.reset();
-  editingId = item ? item.id : null;
-  form.item_date.value = dateStr || item?.item_date || "";
-  form.customer_id.value = item?.customer_id || "";
-  form.content.value = item?.content || "";
-  document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
-  document.getElementById("submit-btn").textContent = editingId ? "수정 저장" : "등록하기";
-  document.getElementById("cancel-edit").style.display = editingId || dateStr ? "inline-flex" : "none";
-  document.getElementById("delete-btn").style.display = editingId ? "inline-flex" : "none";
-  window.scrollTo({ top: 0, behavior: "smooth" });
+function renderFilters(){
+  const row = document.getElementById("site-filters");
+  const allChip = `<div class="chip ${selectedCustomerId===null?'selected':''}" data-id="">전체 보기</div>`;
+  const chips = customersCache.map(c=>{
+    const color = colorFor(c.id);
+    const sel = selectedCustomerId===c.id ? "selected" : "";
+    return `<div class="chip ${sel}" data-id="${c.id}" style="color:${color}"><span class="dot" style="background:${color}"></span>${c.name}</div>`;
+  }).join("");
+  row.innerHTML = allChip + chips;
+  row.querySelectorAll(".chip").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const idAttr = el.dataset.id;
+      selectedCustomerId = idAttr === "" ? null : Number(idAttr);
+      renderFilters();
+      renderSitePanel();
+      loadAndRenderCalendar();
+    });
+  });
 }
-function resetForm() { setForm(null, null); document.getElementById("cancel-edit").style.display = "none"; }
+
+async function renderSitePanel(){
+  const box = document.getElementById("site-panel");
+  if (selectedCustomerId === null) { box.innerHTML = ""; return; }
+  const c = customersCache.find(x => x.id === selectedCustomerId);
+  if (!c) { box.innerHTML = ""; return; }
+  const color = colorFor(selectedCustomerId);
+
+  const [{ data: firstRows }, { data: lastRows }] = await Promise.all([
+    sbClient.from("schedule_items").select("item_date").eq("customer_id", selectedCustomerId).order("item_date", { ascending: true }).limit(1),
+    sbClient.from("schedule_items").select("item_date").eq("customer_id", selectedCustomerId).order("item_date", { ascending: false }).limit(1)
+  ]);
+
+  let pctHtml = `<div class="pct">아직 등록된 일정이 없어요.</div>`;
+  if (firstRows?.length && lastRows?.length) {
+    const first = new Date(firstRows[0].item_date);
+    const last = new Date(lastRows[0].item_date);
+    const today = new Date();
+    const total = last - first;
+    const elapsed = Math.min(Math.max(today - first, 0), total);
+    const pct = total > 0 ? Math.round((elapsed / total) * 100) : (today >= last ? 100 : 0);
+    pctHtml = `<div class="pct">공사 진행률 <b>${pct}%</b></div>
+      <div class="progressbar"><div class="fill" style="width:${pct}%;background:${color}"></div></div>`;
+  }
+
+  box.innerHTML = `
+    <div class="card sitepanel">
+      <div class="sname" style="color:${color}">${c.name}</div>
+      ${pctHtml}
+      <div class="remarklabel">비고 (자유롭게 적으면 자동 저장됩니다)</div>
+      <textarea class="remarkbox" id="remark-input" placeholder="예: 클라이언트 특이사항, 자재 대금 확인 필요 등">${c.remark || ""}</textarea>
+      <div class="savedhint" id="remark-saved">저장됨</div>
+    </div>`;
+
+  const ta = document.getElementById("remark-input");
+  let saveTimer;
+  ta.addEventListener("input", () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      const { error } = await sbClient.from("customers").update({ remark: ta.value }).eq("id", selectedCustomerId);
+      if (!error) {
+        c.remark = ta.value;
+        const hint = document.getElementById("remark-saved");
+        hint.classList.add("show");
+        setTimeout(() => hint.classList.remove("show"), 1200);
+      }
+    }, 500);
+  });
+}
 
 async function loadAndRenderCalendar() {
   document.getElementById("cal-title").textContent = `${viewYear}년 ${viewMonth}월`;
@@ -120,16 +187,20 @@ async function loadAndRenderCalendar() {
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = toISO(viewYear, viewMonth, d);
-    const items = itemsByDate[dateStr] || [];
+    const allItems = itemsByDate[dateStr] || [];
+    const shown = selectedCustomerId === null ? allItems : allItems.filter(it => it.customer_id === selectedCustomerId);
     const isToday = dateStr === todayStr ? "today" : "";
-    let itemsHtml = items.map(it => {
+    const dim = selectedCustomerId !== null && shown.length === 0 ? "dim" : "";
+    let itemsHtml = shown.map(it => {
       const cname = customerName(it.customer_id);
-      const label = cname ? `<span class="site">${cname}</span> ${it.content}` : it.content;
+      const color = it.customer_id ? colorFor(it.customer_id) : null;
+      const label = cname ? `${cname} · ${it.content}` : it.content;
       const cls = cname ? "cal-item" : "cal-item issue";
-      return `<div class="${cls}" data-id="${it.id}">${label}</div>`;
+      const style = color ? ` style="background:${color}22;color:${color};"` : "";
+      return `<div class="${cls}" data-id="${it.id}"${style}>${label}</div>`;
     }).join("");
     html += `
-      <div class="cal-cell ${isToday}" data-date="${dateStr}">
+      <div class="cal-cell ${isToday} ${dim}" data-date="${dateStr}">
         <div class="daynum">${d}</div>
         ${itemsHtml}
         <div class="cal-add-link" data-date="${dateStr}">+ 추가</div>
@@ -149,6 +220,21 @@ async function loadAndRenderCalendar() {
     el.addEventListener("click", () => setForm(el.dataset.date, null));
   });
 }
+
+function setForm(dateStr, item) {
+  const form = document.getElementById("schedule-form");
+  form.reset();
+  editingId = item ? item.id : null;
+  form.item_date.value = dateStr || item?.item_date || "";
+  form.customer_id.value = item?.customer_id || "";
+  form.content.value = item?.content || "";
+  document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
+  document.getElementById("submit-btn").textContent = editingId ? "수정 저장" : "등록하기";
+  document.getElementById("cancel-edit").style.display = editingId || dateStr ? "inline-flex" : "none";
+  document.getElementById("delete-btn").style.display = editingId ? "inline-flex" : "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function resetForm() { setForm(null, null); document.getElementById("cancel-edit").style.display = "none"; }
 
 function shiftMonth(delta) {
   viewMonth += delta;
