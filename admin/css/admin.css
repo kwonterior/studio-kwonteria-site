@@ -170,3 +170,27 @@ tbody tr:hover{background:#faf8f4;}
 .qa-chip .qa-del{margin-left:2px;color:#c0392b;font-weight:800;cursor:pointer;padding:0 2px;}
 .qa-chip.draggable{cursor:grab;}
 .qa-chip.dragging{opacity:.35;}
+
+/* 현장 상세 페이지 */
+.sitehead{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;}
+.sitehead .name{font-size:24px;font-weight:800;}
+.sitehead .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px 24px;margin-top:16px;font-size:13.5px;}
+.sitehead .meta div span{display:block;color:var(--sub);font-size:12px;margin-bottom:2px;}
+.quotebox{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;}
+.quotebox b{font-size:17px;}
+
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;overflow-x:auto;}
+.tabbtn{padding:11px 18px;border:none;background:none;font-size:14.5px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;}
+.tabbtn.active{color:var(--accent-dark);border-bottom-color:var(--accent);}
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+
+.listrow{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-top:1px solid var(--line);}
+.listrow:first-child{border-top:none;}
+.listrow .rowcontent{flex:1;font-size:14.5px;}
+.listrow .rowcontent.done{color:var(--sub);text-decoration:line-through;}
+.listrow .rowdate{flex-shrink:0;width:88px;color:var(--sub);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;}
+.listrow .rowcat{flex-shrink:0;font-weight:700;color:var(--accent-dark);margin-right:6px;}
+.listrow .rowdel{flex-shrink:0;color:#c0392b;cursor:pointer;font-size:13px;}
+.chk-circle{flex-shrink:0;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--line);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;margin-top:1px;}
+.chk-circle.done{background:#4f9a5b;border-color:#4f9a5b;}

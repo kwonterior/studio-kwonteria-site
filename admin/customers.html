@@ -91,7 +91,7 @@ async function loadList() {
   tbody.innerHTML = data.map(c => `
     <tr>
       <td>${fmtDate(c.created_at)}</td>
-      <td>${c.name || "-"}</td>
+      <td><a href="site-detail.html?id=${c.id}" style="color:var(--accent-dark);font-weight:600;">${c.name || "-"}</a></td>
       <td>${c.phone || "-"}</td>
       <td>${c.region || "-"}</td>
       <td>${c.area_pyeong || "-"}</td>

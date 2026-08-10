@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현장 상세 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="site-detail.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <p class="sub" style="margin-bottom:8px;"><a href="customers.html" style="color:var(--accent-dark);font-weight:600;">‹ 고객·상담 목록으로</a></p>
+
+    <div class="card" id="site-head">불러오는 중...</div>
+
+    <div class="tabbar">
+      <button class="tabbtn active" data-tab="schedule">진행 일정</button>
+      <button class="tabbtn" data-tab="checklist">체크리스트</button>
+      <button class="tabbtn" data-tab="report">현장 보고</button>
+      <button class="tabbtn" data-tab="finish">마감 디테일</button>
+    </div>
+
+    <!-- 진행 일정 -->
+    <div class="tabpanel active" id="tab-schedule">
+      <div class="card">
+        <h2 id="form-title">일정 등록</h2>
+        <form id="schedule-form">
+          <input type="hidden" name="id">
+          <div class="form-grid cols-2">
+            <div><label>날짜 *</label><input type="date" name="item_date" required></div>
+            <div><label class="check-label" style="margin-top:26px;"><input type="checkbox" name="confirmed"> 작업자 확정됨</label></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div style="grid-column:1/-1;"><label>내용 *</label><input type="text" name="content" required placeholder="예: 타일, 필름, 도배 / 또는 메모 내용"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
+            <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
+            <button type="button" class="btn btn-ghost" id="delete-btn" style="display:none;color:#c0392b;">삭제</button>
+          </div>
+        </form>
+        <div class="quickadd-head">
+          <span class="remarklabel" style="margin:0;">빠른 추가 <small style="font-weight:400;">(날짜를 먼저 선택하면, 눌렀을 때 바로 등록됩니다)</small></span>
+        </div>
+        <div class="quickadd-grid" id="quickadd-grid"></div>
+      </div>
+
+      <div class="card sitepanel">
+        <div class="pct" id="pct-text">불러오는 중...</div>
+        <div class="progressbar"><div class="fill" id="pct-fill" style="width:0%;"></div></div>
+        <div class="remarklabel">비고 <small style="font-weight:400;">(자유롭게 적으면 자동 저장됩니다)</small></div>
+        <textarea class="remarkbox" id="remark-input" placeholder="예: 클라이언트 특이사항, 자재 대금 확인 필요 등"></textarea>
+        <div class="savedhint" id="remark-saved">저장됨</div>
+      </div>
+
+      <div class="card">
+        <div class="cal-header">
+          <div class="cal-nav">
+            <button class="btn btn-ghost btn-sm" id="prev-month">이전달</button>
+            <button class="btn btn-ghost btn-sm" id="today-btn">이번달</button>
+            <button class="btn btn-ghost btn-sm" id="next-month">다음달</button>
+          </div>
+          <div class="title" id="cal-title">-</div>
+          <div style="width:180px;"></div>
+        </div>
+        <div class="cal-grid" id="cal-dow-row">
+          <div class="cal-dow" style="color:#c0392b;">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+          <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow" style="color:#2b5fc0;">토</div>
+        </div>
+        <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- 체크리스트 -->
+    <div class="tabpanel" id="tab-checklist">
+      <div class="card">
+        <h2>체크리스트</h2>
+        <form id="checklist-form" class="form-actions" style="margin-top:12px;">
+          <input type="text" id="checklist-input" placeholder="예: 계약서 서명 확인" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:14px;">
+          <button type="submit" class="btn btn-primary btn-sm">추가</button>
+        </form>
+        <div id="checklist-list" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 현장 보고 -->
+    <div class="tabpanel" id="tab-report">
+      <div class="card">
+        <h2>현장 보고</h2>
+        <form id="report-form" style="margin-top:12px;">
+          <div class="form-grid cols-2">
+            <div><label>날짜 *</label><input type="date" id="report-date" required></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px;">
+            <div style="grid-column:1/-1;"><label>내용 *</label><textarea id="report-content" rows="2" required placeholder="현장 방문/점검 내용을 적어주세요"></textarea></div>
+          </div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary btn-sm">등록하기</button></div>
+        </form>
+        <div id="report-list" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+    <!-- 마감 디테일 -->
+    <div class="tabpanel" id="tab-finish">
+      <div class="card">
+        <h2>마감 디테일</h2>
+        <form id="finish-form" class="form-grid cols-2" style="margin-top:12px;align-items:end;">
+          <div><label>항목</label><input type="text" id="finish-category" placeholder="예: 바닥재"></div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="finish-content" required placeholder="예: 강마루 OO사 OO색상" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:14px;">
+            <button type="submit" class="btn btn-primary btn-sm">추가</button>
+          </div>
+        </form>
+        <div id="finish-list" style="margin-top:14px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const customerId = Number(params.get("id"));
+let editingId = null;
+let categoriesCache = [];
+let viewYear, viewMonth;
+let customer = null;
+
+const HOLIDAYS_2026 = new Set([
+  "2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-01","2026-03-02",
+  "2026-05-05","2026-05-24","2026-05-25","2026-06-06","2026-08-15","2026-08-17",
+  "2026-09-24","2026-09-25","2026-09-26","2026-10-03","2026-10-05","2026-10-09","2026-12-25",
+]);
+function isHoliday(dateStr){ return HOLIDAYS_2026.has(dateStr); }
+function pad2(n){ return String(n).padStart(2, "0"); }
+function toISO(y, m, d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+function fmtMoney(n){ if (n === null || n === undefined || n === "") return "-"; return Number(n).toLocaleString("ko-KR") + "원"; }
+
+async function loadHead() {
+  const { data: c } = await sbClient.from("customers").select("*").eq("id", customerId).single();
+  customer = c;
+  if (!c) { document.getElementById("site-head").innerHTML = "고객을 찾을 수 없습니다."; return; }
+  const { data: quotes } = await sbClient.from("quotes").select("*").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(1);
+  const q = quotes && quotes[0];
+  document.getElementById("site-head").innerHTML = `
+    <div class="sitehead">
+      <div>
+        <div class="name">${c.name}</div>
+        <span class="badge status-${c.status}">${c.status || "-"}</span>
+      </div>
+    </div>
+    <div class="meta">
+      <div><span>연락처</span>${c.phone || "-"}</div>
+      <div><span>지역</span>${c.region || "-"}</div>
+      <div><span>주소</span>${c.address || "-"}</div>
+      <div><span>평수</span>${c.area_pyeong || "-"}</div>
+      <div><span>예산</span>${c.budget || "-"}</div>
+      <div><span>유입경로</span>${c.source || "-"}</div>
+    </div>
+    ${c.memo ? `<div style="margin-top:12px;font-size:13.5px;color:var(--sub);">메모: ${c.memo}</div>` : ""}
+    <div class="quotebox">
+      ${q ? `견적서(${q.type === "detailed" ? "상세" : "간단"}, ${q.status === "confirmed" ? "확정" : "작성중"}) · <b>${fmtMoney(q.amount)}</b>` : "등록된 견적서가 없습니다."}
+    </div>`;
+}
+
+async function loadCategories() {
+  const { data } = await sbClient.from("schedule_categories").select("*").order("sort_order", { ascending: true });
+  categoriesCache = data || [];
+  renderQuickAdd();
+}
+function renderQuickAdd() {
+  const grid = document.getElementById("quickadd-grid");
+  grid.innerHTML = categoriesCache.map(cat => `
+    <button type="button" class="qa-chip" data-id="${cat.id}" style="border-color:${cat.color};color:${cat.color};">
+      <span class="dot" style="background:${cat.color}"></span>${cat.name}
+    </button>
+  `).join("");
+  grid.querySelectorAll(".qa-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const cat = categoriesCache.find(c => c.id === Number(btn.dataset.id));
+      const form = document.getElementById("schedule-form");
+      form.content.value = cat.name;
+      if (form.item_date.value) {
+        document.getElementById("schedule-form").requestSubmit();
+      } else {
+        alert("먼저 날짜를 선택해주세요. 내용칸에 \"" + cat.name + "\"을 넣어뒀어요.");
+      }
+    });
+  });
+}
+
+async function renderProgress() {
+  const [{ data: firstRows }, { data: lastRows }] = await Promise.all([
+    sbClient.from("schedule_items").select("item_date").eq("customer_id", customerId).order("item_date", { ascending: true }).limit(1),
+    sbClient.from("schedule_items").select("item_date").eq("customer_id", customerId).order("item_date", { ascending: false }).limit(1)
+  ]);
+  if (firstRows?.length && lastRows?.length) {
+    const first = new Date(firstRows[0].item_date);
+    const last = new Date(lastRows[0].item_date);
+    const today = new Date();
+    const total = last - first;
+    const elapsed = Math.min(Math.max(today - first, 0), total);
+    const pct = total > 0 ? Math.round((elapsed / total) * 100) : (today >= last ? 100 : 0);
+    document.getElementById("pct-text").innerHTML = `공사 진행률 <b>${pct}%</b>`;
+    document.getElementById("pct-fill").style.width = pct + "%";
+    document.getElementById("pct-fill").style.background = "var(--accent)";
+  } else {
+    document.getElementById("pct-text").textContent = "아직 등록된 일정이 없어요.";
+  }
+
+  const ta = document.getElementById("remark-input");
+  ta.value = customer?.remark || "";
+  let saveTimer;
+  ta.addEventListener("input", () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      const { error } = await sbClient.from("customers").update({ remark: ta.value }).eq("id", customerId);
+      if (!error) {
+        const hint = document.getElementById("remark-saved");
+        hint.classList.add("show");
+        setTimeout(() => hint.classList.remove("show"), 1200);
+      }
+    }, 500);
+  });
+}
+
+async function loadAndRenderCalendar() {
+  document.getElementById("cal-title").textContent = `${viewYear}년 ${viewMonth}월`;
+  const monthStart = toISO(viewYear, viewMonth, 1);
+  const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const monthEnd = toISO(viewYear, viewMonth, daysInMonth);
+
+  const { data } = await sbClient.from("schedule_items").select("*")
+    .eq("customer_id", customerId).gte("item_date", monthStart).lte("item_date", monthEnd).order("id", { ascending: true });
+
+  const itemsByDate = {};
+  (data || []).forEach(it => { (itemsByDate[it.item_date] = itemsByDate[it.item_date] || []).push(it); });
+
+  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay();
+  const grid = document.getElementById("cal-grid");
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let html = "";
+  for (let i = 0; i < firstDow; i++) html += `<div class="cal-cell empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = toISO(viewYear, viewMonth, d);
+    const items = itemsByDate[dateStr] || [];
+    const isToday = dateStr === todayStr ? "today" : "";
+    const dow = new Date(viewYear, viewMonth - 1, d).getDay();
+    let daynumColor = "";
+    if (isHoliday(dateStr) || dow === 0) daynumColor = "#c0392b";
+    else if (dow === 6) daynumColor = "#2b5fc0";
+    const itemsHtml = items.map(it => {
+      const confirmMark = `<span class="confirm-toggle ${it.confirmed ? "on" : ""}" data-toggle-id="${it.id}" title="${it.confirmed ? "확정됨" : "미확정"}">${it.confirmed ? "●" : "○"}</span>`;
+      return `<div class="cal-item" data-id="${it.id}">${confirmMark}${it.content}</div>`;
+    }).join("");
+    html += `
+      <div class="cal-cell ${isToday}" data-date="${dateStr}">
+        <div class="daynum"${daynumColor ? ` style="color:${daynumColor};"` : ""}>${d}</div>
+        ${itemsHtml}
+        <div class="cal-add-link" data-date="${dateStr}">+ 추가</div>
+      </div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll(".cal-item").forEach(el => {
+    el.addEventListener("click", (e) => {
+      if (e.target.classList.contains("confirm-toggle")) return;
+      const id = Number(el.dataset.id);
+      const item = (data || []).find(x => x.id === id);
+      if (item) setForm(null, item);
+    });
+  });
+  grid.querySelectorAll(".confirm-toggle").forEach(el => {
+    el.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const id = Number(el.dataset.toggleId);
+      const item = (data || []).find(x => x.id === id);
+      if (!item) return;
+      await sbClient.from("schedule_items").update({ confirmed: !item.confirmed }).eq("id", id);
+      loadAndRenderCalendar();
+    });
+  });
+  grid.querySelectorAll(".cal-add-link").forEach(el => {
+    el.addEventListener("click", () => setForm(el.dataset.date, null));
+  });
+}
+
+function setForm(dateStr, item) {
+  const form = document.getElementById("schedule-form");
+  form.reset();
+  editingId = item ? item.id : null;
+  form.item_date.value = dateStr || item?.item_date || "";
+  form.content.value = item?.content || "";
+  form.confirmed.checked = item?.confirmed || false;
+  document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
+  document.getElementById("submit-btn").textContent = editingId ? "수정 저장" : "등록하기";
+  document.getElementById("cancel-edit").style.display = editingId || dateStr ? "inline-flex" : "none";
+  document.getElementById("delete-btn").style.display = editingId ? "inline-flex" : "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function resetForm() { setForm(null, null); document.getElementById("cancel-edit").style.display = "none"; }
+function shiftMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth > 12) { viewMonth = 1; viewYear++; }
+  if (viewMonth < 1) { viewMonth = 12; viewYear--; }
+  loadAndRenderCalendar();
+}
+
+async function loadChecklist() {
+  const { data } = await sbClient.from("site_checklists").select("*").eq("customer_id", customerId).order("sort_order", { ascending: true });
+  const box = document.getElementById("checklist-list");
+  if (!data || !data.length) { box.innerHTML = `<div class="listrow" style="color:var(--sub);">등록된 항목이 없습니다.</div>`; return; }
+  box.innerHTML = data.map(it => `
+    <div class="listrow">
+      <span class="chk-circle ${it.done ? "done" : ""}" data-id="${it.id}">${it.done ? "✓" : ""}</span>
+      <span class="rowcontent ${it.done ? "done" : ""}">${it.content}</span>
+      <span class="rowdel" data-id="${it.id}">삭제</span>
+    </div>`).join("");
+  box.querySelectorAll(".chk-circle").forEach(el => {
+    el.addEventListener("click", async () => {
+      const id = Number(el.dataset.id);
+      const nowDone = !el.classList.contains("done");
+      await sbClient.from("site_checklists").update({ done: nowDone }).eq("id", id);
+      loadChecklist();
+    });
+  });
+  box.querySelectorAll(".rowdel").forEach(el => {
+    el.addEventListener("click", async () => {
+      if (!confirm("삭제하시겠습니까?")) return;
+      await sbClient.from("site_checklists").delete().eq("id", Number(el.dataset.id));
+      loadChecklist();
+    });
+  });
+}
+
+async function loadReports() {
+  const { data } = await sbClient.from("site_reports").select("*").eq("customer_id", customerId).order("report_date", { ascending: false });
+  const box = document.getElementById("report-list");
+  if (!data || !data.length) { box.innerHTML = `<div class="listrow" style="color:var(--sub);">등록된 보고가 없습니다.</div>`; return; }
+  box.innerHTML = data.map(it => `
+    <div class="listrow">
+      <span class="rowdate">${it.report_date}</span>
+      <span class="rowcontent">${it.content}</span>
+      <span class="rowdel" data-id="${it.id}">삭제</span>
+    </div>`).join("");
+  box.querySelectorAll(".rowdel").forEach(el => {
+    el.addEventListener("click", async () => {
+      if (!confirm("삭제하시겠습니까?")) return;
+      await sbClient.from("site_reports").delete().eq("id", Number(el.dataset.id));
+      loadReports();
+    });
+  });
+}
+
+async function loadFinishDetails() {
+  const { data } = await sbClient.from("finish_details").select("*").eq("customer_id", customerId).order("sort_order", { ascending: true });
+  const box = document.getElementById("finish-list");
+  if (!data || !data.length) { box.innerHTML = `<div class="listrow" style="color:var(--sub);">등록된 항목이 없습니다.</div>`; return; }
+  box.innerHTML = data.map(it => `
+    <div class="listrow">
+      ${it.category ? `<span class="rowcat">${it.category}</span>` : ""}
+      <span class="rowcontent">${it.content}</span>
+      <span class="rowdel" data-id="${it.id}">삭제</span>
+    </div>`).join("");
+  box.querySelectorAll(".rowdel").forEach(el => {
+    el.addEventListener("click", async () => {
+      if (!confirm("삭제하시겠습니까?")) return;
+      await sbClient.from("finish_details").delete().eq("id", Number(el.dataset.id));
+      loadFinishDetails();
+    });
+  });
+}
+
+document.querySelectorAll(".tabbtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  if (!customerId) { document.getElementById("site-head").innerHTML = "잘못된 접근입니다."; return; }
+
+  await loadHead();
+  await loadCategories();
+  await renderProgress();
+
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth() + 1;
+  await loadAndRenderCalendar();
+  await loadChecklist();
+  await loadReports();
+  await loadFinishDetails();
+
+  document.getElementById("prev-month").addEventListener("click", () => shiftMonth(-1));
+  document.getElementById("next-month").addEventListener("click", () => shiftMonth(1));
+  document.getElementById("today-btn").addEventListener("click", () => {
+    const n = new Date();
+    viewYear = n.getFullYear();
+    viewMonth = n.getMonth() + 1;
+    loadAndRenderCalendar();
+  });
+  document.getElementById("cancel-edit").addEventListener("click", resetForm);
+  document.getElementById("delete-btn").addEventListener("click", async () => {
+    if (!editingId) return;
+    if (!confirm("이 일정을 삭제하시겠습니까?")) return;
+    await sbClient.from("schedule_items").delete().eq("id", editingId);
+    resetForm();
+    loadAndRenderCalendar();
+  });
+  document.getElementById("schedule-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+      item_date: form.item_date.value,
+      customer_id: customerId,
+      content: form.content.value,
+      confirmed: form.confirmed.checked
+    };
+    let result;
+    if (editingId) {
+      result = await sbClient.from("schedule_items").update(payload).eq("id", editingId);
+    } else {
+      payload.created_by = auth.user.id;
+      result = await sbClient.from("schedule_items").insert([payload]);
+    }
+    if (result.error) { alert("저장 실패: " + result.error.message); return; }
+    resetForm();
+    loadAndRenderCalendar();
+  });
+
+  document.getElementById("checklist-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = document.getElementById("checklist-input");
+    if (!input.value.trim()) return;
+    await sbClient.from("site_checklists").insert([{ customer_id: customerId, content: input.value.trim(), created_by: auth.user.id }]);
+    input.value = "";
+    loadChecklist();
+  });
+
+  document.getElementById("report-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const date = document.getElementById("report-date").value;
+    const content = document.getElementById("report-content").value.trim();
+    if (!date || !content) return;
+    await sbClient.from("site_reports").insert([{ customer_id: customerId, report_date: date, content, created_by: auth.user.id }]);
+    document.getElementById("report-content").value = "";
+    loadReports();
+  });
+
+  document.getElementById("finish-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const category = document.getElementById("finish-category").value.trim();
+    const content = document.getElementById("finish-content").value.trim();
+    if (!content) return;
+    await sbClient.from("finish_details").insert([{ customer_id: customerId, category, content, created_by: auth.user.id }]);
+    document.getElementById("finish-category").value = "";
+    document.getElementById("finish-content").value = "";
+    loadFinishDetails();
+  });
+})();
+</script>
+</body>
+</html>
