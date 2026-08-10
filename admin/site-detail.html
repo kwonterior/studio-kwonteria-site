@@ -164,24 +164,29 @@ async function loadHead() {
   if (!c) { document.getElementById("site-head").innerHTML = "고객을 찾을 수 없습니다."; return; }
   const { data: quotes } = await sbClient.from("quotes").select("*").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(1);
   const q = quotes && quotes[0];
+  const fields = [
+    ["연락처", c.phone], ["지역", c.region], ["주소", c.address],
+    ["평수", c.area_pyeong], ["예산", c.budget], ["유입경로", c.source]
+  ].filter(([, v]) => v);
+
   document.getElementById("site-head").innerHTML = `
-    <div class="sitehead">
+    <div class="sitehead-top">
       <div>
         <div class="name">${c.name}</div>
-        <span class="badge status-${c.status}">${c.status || "-"}</span>
+        <div class="badges">
+          <span class="badge status-${c.status}">${c.status || "-"}</span>
+        </div>
       </div>
+      <a href="customers.html" class="btn btn-ghost btn-sm">정보 수정</a>
     </div>
-    <div class="meta">
-      <div><span>연락처</span>${c.phone || "-"}</div>
-      <div><span>지역</span>${c.region || "-"}</div>
-      <div><span>주소</span>${c.address || "-"}</div>
-      <div><span>평수</span>${c.area_pyeong || "-"}</div>
-      <div><span>예산</span>${c.budget || "-"}</div>
-      <div><span>유입경로</span>${c.source || "-"}</div>
-    </div>
-    ${c.memo ? `<div style="margin-top:12px;font-size:13.5px;color:var(--sub);">메모: ${c.memo}</div>` : ""}
-    <div class="quotebox">
-      ${q ? `견적서(${q.type === "detailed" ? "상세" : "간단"}, ${q.status === "confirmed" ? "확정" : "작성중"}) · <b>${fmtMoney(q.amount)}</b>` : "등록된 견적서가 없습니다."}
+    ${fields.length ? `<div class="infogrid">
+      ${fields.map(([k, v]) => `<div class="infoitem"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")}
+    </div>` : ""}
+    ${c.memo ? `<div class="notebox">${c.memo}</div>` : ""}
+    <div class="quotebox2">
+      ${q
+        ? `<div><span class="k">견적서 (${q.type === "detailed" ? "상세" : "간단"})</span><span class="v" style="font-size:19px;">${fmtMoney(q.amount)}</span></div><span class="badge status-${q.status === "confirmed" ? "계약" : "문의"}">${q.status === "confirmed" ? "확정" : "작성중"}</span>`
+        : `<span class="k">등록된 견적서가 없습니다.</span>`}
     </div>`;
 }
 
