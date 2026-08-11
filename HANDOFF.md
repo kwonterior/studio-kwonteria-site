@@ -147,7 +147,7 @@ RLS 정책 요약(1차 문서 표에 추가):
 
 ## 8. 남은 작업 / TODO
 
-1. **구글 서치 콘솔 등록** — 2026-08-11 저녁에 네이버 서치어드바이저(소유확인+sitemap 제출+전체 페이지 수집 요청)까지 끝냄. 구글 서치 콘솔은 다음 세션에서 이어서 진행하기로 하고 중단함(대표님 "구글 서치는 내일 다시 하자"). 방법은 네이버와 동일한 흐름: https://search.google.com/search-console 에서 `https://www.kwonterior.com` 등록 → 소유확인 방법 중 "HTML 태그" 선택 → 나오는 `<meta name="google-site-verification" ...>` 코드를 받아오면 됨(코드 주면 바로 index.html에 반영·배포). 이후 사이트맵도 제출: `https://www.kwonterior.com/sitemap.xml`.
+1. ~~구글 서치 콘솔 등록~~ — **2026-08-11(다음 세션)에 완료.** URL 접두어(`https://www.kwonterior.com/`) 속성으로 등록, HTML 태그 방식 소유확인(`google-site-verification` 메타태그를 index.html에 추가, naver 태그 바로 아래) → 배포 확인 후 소유권 확인 완료. `sitemap.xml` 제출 완료. 홈/about/projects/contact 4페이지 전부 URL 검사 → 색인 생성 요청 완료.
 2. **구글 비즈니스 프로필 등록** — 아직 미착수. 구글 지도 노출용, 구글 계정만 있으면 진행 가능.
 3. **견적서/정산/자재발주 삭제 버튼** — 아직 없음. 2026-08-11에 재차 "나중에"로 보류 확인(먼저 제안하지 말 것). 요청 시 `customers.html` 패턴(홑따옴표 onclick + cascade 경고 문구) 그대로 적용.
 4. **시공 사진 등록** — 홈페이지 PROJECTS(포트폴리오)는 여전히 비어있음(테스트용 항목 1개만 있음). 관리자 포트폴리오 화면에서 실제 시공 사진 등록 필요.
