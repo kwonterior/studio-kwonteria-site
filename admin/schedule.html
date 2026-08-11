@@ -375,7 +375,7 @@ function renderSiteTable(data, daysInMonth) {
   const hasIssue = data.some(it => !it.customer_id);
 
   function chip(it, color) {
-    return `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.confirmed ? "● " : ""}${it.content}</span>`;
+    return `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.content}</span>`;
   }
 
   let headRow = `<th class="datecol">날짜</th>` +
