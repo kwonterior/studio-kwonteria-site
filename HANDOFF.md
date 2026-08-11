@@ -16,8 +16,8 @@
 
 ## 2. 배포/접속 정보
 
-- 홈페이지: https://studio-kwonteria-site.vercel.app
-- 관리자페이지 로그인: https://studio-kwonteria-site.vercel.app/admin/login.html
+- 홈페이지: https://www.kwonterior.com (2026-08-11 커스텀 도메인 연결, vercel.app 주소도 계속 동작함)
+- 관리자페이지 로그인: https://www.kwonterior.com/admin/login.html
 - GitHub 저장소: https://github.com/kwonterior/studio-kwonteria-site (main, Public)
 - Vercel: kwonterior1 팀 / studio-kwonteria-site (main push마다 자동 배포, 보통 1~2분 소요)
 - Supabase: https://supabase.com/dashboard/project/qpyqhgczsigqiuxdujgq (Seoul 리전)

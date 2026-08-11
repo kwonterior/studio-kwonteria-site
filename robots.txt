@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://studio-kwonteria-site.vercel.app/sitemap.xml
+Sitemap: https://www.kwonterior.com/sitemap.xml
