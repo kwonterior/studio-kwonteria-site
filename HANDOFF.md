@@ -1,246 +1,176 @@
-# 스튜디오 권테리어 홈페이지·관리자페이지 — 인수인계 문서
+# 스튜디오 권테리어 홈페이지·관리자페이지 — 인수인계 문서 (2차)
 
-작성일: 2026-08-10
-작성 배경: Cowork AI PM과의 대화로 기획/구축을 진행하다가, 이후 작업을 Claude Code로 이어가기 위해 작성한 인수인계 문서입니다.
-
----
-
-## 1. 프로젝트 개요
-
-경상북도 경주 소재 인테리어 회사 "스튜디오 권테리어"(대표 1인 + 직원 1인 체제, 향후 디자이너 채용 예정)의 회사 홈페이지와 내부 관리자페이지를 처음부터 구축하는 프로젝트입니다.
-
-- 홈페이지 목적: 회사 신뢰도, 지역(경주·포항) 검색 노출, 채용
-- 관리자페이지 목적: 대표가 혼자 처리하던 반복 업무(견적서, 정산, 발주, 공정 관리) 부담을 줄이는 것. "완벽한 프로그램"이 아니라 "매일 실제로 쓰는 프로그램"이 목표.
+작성일: 2026-08-11
+작성 배경: 2026-08-10에 Cowork → Claude Code로 1차 인수인계된 뒤, Claude Code(로컬)에서 git/GitHub 연동을 완료하고 관리자페이지를 대폭 개편했습니다. 이 문서는 그 이후 컨텍스트가 리셋된 새 Claude Code 세션이 바로 이어서 작업할 수 있도록 다시 정리한 것입니다. **1차 인수인계 문서의 내용은 대부분 여전히 유효하지만, 4~9번 섹션(폴더구조/스키마/완료기능/TODO)은 이 문서로 대체됩니다.**
 
 ---
 
-## 2. 배포 정보 (바로 접속 가능한 링크)
+## 1. 프로젝트 개요 (변경 없음)
+
+경상북도 경주 소재 인테리어 회사 "스튜디오 권테리어"(대표 1인 + 직원 1인, 향후 디자이너 채용 예정)의 홈페이지 + 내부 관리자페이지.
+
+- 홈페이지 목적: 회사 신뢰도 > 지역(경주·포항) 검색 노출 > 채용
+- 관리자페이지 목적: 대표가 혼자 처리하던 반복 업무(견적서/정산/발주/공정관리) 부담 경감. "완벽한 프로그램"이 아니라 "매일 실제로 쓰는 프로그램"이 목표. **작업팀(전기팀 등 외주 인력)에게 공정표를 캡처해서 공유하는 것도 실제 업무 방식 중 하나** — 이게 `admin/schedule-share.html`이 존재하는 이유입니다.
+
+---
+
+## 2. 배포/접속 정보
 
 - 홈페이지: https://studio-kwonteria-site.vercel.app
 - 관리자페이지 로그인: https://studio-kwonteria-site.vercel.app/admin/login.html
-- GitHub 저장소: https://github.com/kwonterior/studio-kwonteria-site (main 브랜치, Public)
-- Vercel 프로젝트: kwonterior1 팀 / studio-kwonteria-site (GitHub main 브랜치에 push되면 자동 배포됨)
-- Supabase 프로젝트: https://supabase.com/dashboard/project/qpyqhgczsigqiuxdujgq (조직명 "스튜디오 권테리어", 프로젝트명 "kwonterior's Project", 리전 Northeast Asia/Seoul)
-
-로컬 작업 폴더: 대표님 컴퓨터 바탕화면의 `studio-kwonteria-site` 폴더가 위 GitHub 저장소 내용을 그대로 미러링하고 있습니다 (Cowork가 파일을 여기 쓰고, 대표님이 GitHub 업로드 화면에 드래그하는 방식으로 배포해왔습니다).
-
----
-
-## 3. 기술 스택 및 아키텍처
-
-의도적으로 빌드 도구가 필요 없는 순수 정적 사이트(Plain HTML/CSS/JavaScript)로 만들었습니다. Node/React/Next.js 등 빌드 파이프라인이 없습니다. 이유: 이 작업 환경(Cowork sandbox)이 npm 레지스트리·대부분의 외부 도메인에 대한 네트워크 접근이 막혀 있어(allowlist 방식) `npm install`/`npx create-next-app` 등이 불가능했기 때문입니다. Claude Code(로컬 환경)로 이어받으면 이 제약이 없으므로, 필요하다면 이후 Next.js 등으로 마이그레이션해도 되지만 현재는 정적 사이트로 충분히 작동합니다.
-
-- 프런트엔드: 순수 HTML/CSS/JS, 빌드 스텝 없음
-- 데이터/인증/파일저장: Supabase (Postgres DB + Auth + Storage), 브라우저에서 `@supabase/supabase-js` CDN(`https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`)을 스크립트 태그로 로드해서 사용
-- 배포: GitHub 저장소 → Vercel이 main 브랜치 push마다 자동 빌드/배포 (별도 빌드 설정 없이 정적 파일 그대로 서빙)
-- 인증 키: Supabase "publishable key"(신형 anon key)를 클라이언트 코드에 그대로 노출해서 사용 중 — 이건 의도된 설계입니다 (공개되어도 안전한 키). DB 접근 제어는 Row Level Security(RLS) 정책으로 처리합니다.
+- GitHub 저장소: https://github.com/kwonterior/studio-kwonteria-site (main, Public)
+- Vercel: kwonterior1 팀 / studio-kwonteria-site (main push마다 자동 배포, 보통 1~2분 소요)
+- Supabase: https://supabase.com/dashboard/project/qpyqhgczsigqiuxdujgq (Seoul 리전)
+- 로컬 작업 폴더: `~/Desktop/studio-kwonteria-site` — **이제 정식 git 저장소입니다** (아래 3번 참고). GitHub `main`과 완전히 동기화되어 있습니다.
 
 ---
 
-## 4. 폴더/파일 구조
+## 3. Git / 배포 워크플로 (★ 1차 문서와 달라진 핵심 부분)
+
+- 로컬 폴더가 git 저장소로 초기화되어 있고 (`git remote -v` → `origin` = 위 GitHub 저장소), `git push origin main`이 바로 됩니다.
+- **인증**: GitHub fine-grained PAT을 Windows Credential Manager(Git Credential Manager)에 저장해뒀습니다. `protocol=https, host=github.com, username=x-access-token`. 별도 로그인 없이 `git push`가 그냥 동작합니다. 토큰이 만료되거나(발급 시 유효기간 확인 필요) 권한 문제가 생기면, 대표님께 새 fine-grained PAT(해당 저장소 1개, Contents: Read and write)을 요청해서 아래로 재저장:
+  ```
+  printf 'protocol=https\nhost=github.com\nusername=x-access-token\npassword=<새토큰>\n\n' | git credential-manager store
+  ```
+- **작업 흐름**: 파일 수정 → `git add <파일>` → `git commit -m "..."` → `git push origin main` → Vercel 자동 배포 → 필요시 실제 페이지에서 확인(가능하면 claude-in-chrome으로 로그인된 세션에서 직접 클릭 테스트).
+- 커밋은 항상 구체적 파일만 `git add` (절대 `-A`/`.` 금지 — 다른 사이드 프로젝트 파일 섞일 위험 없음도 확인했지만 습관적으로 지킬 것).
+- **DB 스키마 변경(ALTER/CREATE TABLE 등)은 Claude Code가 직접 실행할 수 없습니다.** anon/publishable key로는 DDL이 불가능하고 DB 비밀번호/service_role 키도 없습니다. → 매번 SQL을 만들어서 대표님께 드리고, Supabase SQL Editor에서 대표님이 직접 실행해야 합니다. 실행 후에는 로그인된 브라우저 세션(claude-in-chrome, 이미 대표님 실제 크롬에 로그인되어 있음)에서 `sbClient` 콘솔 쿼리로 즉시 검증 가능합니다.
+
+---
+
+## 4. 폴더/파일 구조 (현재 기준)
 
 ```
-studio-kwonteria-site/              (= GitHub 저장소 루트)
-├── index.html                      HOME
-├── about.html                      ABOUT (회사소개, 철학, 사업자정보)
-├── projects.html                   PROJECTS (포트폴리오 - Supabase에서 동적 로드)
-├── contact.html                    CONTACT (상담신청 폼 → customers 테이블에 저장)
-├── css/style.css                   홈페이지 공통 스타일
-├── js/config.js                    회사 정보(전화번호/카카오/주소 등) + Supabase URL/KEY 상수
-├── js/main.js                      네비게이션 토글, 연락처 자동채움, 상담폼 제출 로직
-└── admin/                          관리자페이지 (로그인 필요, 검색엔진 노출 안 됨)
-    ├── login.html                  로그인 화면
-    ├── index.html                  대시보드 (최근 상담 문의 목록)
-    ├── customers.html              고객·상담 관리 (CRUD, 삭제 버튼 없음)
-    ├── quotes.html                 견적서 관리 (작성/수정은 대표만, 직원은 조회만)
-    ├── payments.html               정산·지급 관리 (대표 전용, 직원 접근 차단)
-    ├── materials.html              자재발주 관리 (CRUD, 삭제 버튼 없음)
-    ├── portfolio.html              포트폴리오 관리 (사진 업로드/수정/삭제 → 홈페이지에 자동 반영)
-    ├── schedule.html                공정표 (월별 캘린더, 현장별 일정 + 이슈/메모, CRUD+삭제)
-    ├── css/admin.css               관리자페이지 공통 스타일
-    └── js/admin-common.js          로그인확인(requireAuth), 사이드바 메뉴 렌더링(역할별), 공통 유틸
+studio-kwonteria-site/
+├── index.html / about.html / projects.html / contact.html   (홈페이지, 변경 없음)
+├── css/style.css, js/config.js, js/main.js
+├── HANDOFF.md                       ← 이 문서
+└── admin/
+    ├── login.html
+    ├── index.html                   대시보드
+    ├── customers.html               고객·상담 관리 (등록/수정/삭제, 이름 클릭→site-detail.html)
+    ├── site-detail.html             ★신규 — 현장 상세 페이지 (아래 6번 참고)
+    ├── schedule.html                공정표 (대폭 개편, 아래 6번 참고)
+    ├── schedule-share.html          ★신규 — 사이드바 없는 전체 폭 "공유용 보기" (작업팀 공유/인쇄용)
+    ├── quotes.html                  견적서 관리 (변경 없음 — 삭제 버튼 아직 없음)
+    ├── payments.html                정산·지급 관리 (변경 없음 — 삭제 버튼 아직 없음)
+    ├── materials.html               자재발주 관리 (변경 없음 — 삭제 버튼 아직 없음)
+    ├── portfolio.html               포트폴리오 관리 (변경 없음)
+    ├── css/admin.css                공통 스타일 (이번 세션에서 많이 추가됨 — sched-table, qa-chip, sitepanel, tabbar, listrow 등)
+    └── js/admin-common.js           변경 없음 (requireAuth, 사이드바, fmtDate/fmtMoney)
 ```
-
-각 관리자 화면은 상단에 등록/수정 폼이 있고 하단에 목록 테이블이 있는 동일한 패턴입니다. `admin-common.js`의 `requireAuth()`가 모든 관리자 페이지 맨 위에서 로그인·역할(profile)을 확인하고, 결과가 없으면 `login.html`로 리다이렉트합니다.
 
 ---
 
-## 5. Supabase 설정
+## 5. Supabase 스키마 — 이번 세션에서 추가/변경된 것
 
-### 5.1 접속 정보
-- Project URL: `https://qpyqhgczsigqiuxdujgq.supabase.co`
-- Publishable key (클라이언트용, 공개 가능): `sb_publishable_CU5HOfouKF8OrUq3B7wYHw_WmpeBQ2g`
-- 데이터베이스 비밀번호, service_role 키는 이 문서에 포함하지 않았습니다. 필요하면 Supabase 대시보드 → Project Settings → API에서 대표님이 직접 확인해서 전달해야 합니다 (민감정보라 채팅/문서에 남기지 않는 것을 권장합니다).
-
-### 5.2 인증 사용자 (Supabase Auth)
-- `rdosung@naver.com` — role: `owner` (대표, 권오성)
-- `kwonterior1@naver.com` — role: `employee` (직원, 기성수)
-- 비밀번호는 대표님만 알고 있으며 이 문서에 없습니다.
-- 역할 정보는 `profiles` 테이블에 `auth.users.id`와 1:1로 저장되어 있습니다 (`role` 컬럼: `'owner'` 또는 `'employee'`).
-
-### 5.3 테이블 스키마 (실제 실행된 SQL 기준)
+1차 문서의 `profiles/customers/quotes/payments/material_orders/projects/schedule_items` 테이블은 그대로 있고, 다음이 **추가**되었습니다 (전부 실행 완료, 대표님이 SQL Editor에서 직접 실행함):
 
 ```sql
--- 직원 정보 및 역할
-create table profiles (
-  id uuid references auth.users(id) primary key,
-  name text not null,
-  role text not null check (role in ('owner','employee')),
-  created_at timestamptz default now()
-);
+-- customers에 비고 칸 추가 (현장 상세 페이지의 "비고" textarea가 여기 저장됨)
+alter table customers add column remark text;
 
--- 고객/상담 (홈페이지 상담폼이 여기로 자동 insert됨)
-create table customers (
+-- customers 삭제 허용 (전에는 delete policy가 없어서 삭제 버튼이 막혀 있었음)
+create policy "customers_delete_authenticated" on customers
+  for delete using (auth.uid() is not null);
+
+-- 스케줄 항목에 확정/미확정 여부
+alter table schedule_items add column confirmed boolean default false;
+
+-- 공정표 "빠른 추가" 카테고리 (36개, 순서/색상 포함, 대표님이 직접 이름 수정·삭제·드래그 순서변경 가능)
+create table schedule_categories (
   id bigint generated always as identity primary key,
   name text not null,
-  phone text,
-  address text,
-  region text,
-  budget text,
-  area_pyeong text,
-  status text default '문의',   -- 문의/상담중/견적중/계약/공사중/준공/AS
-  source text,                  -- 블로그/인스타그램/지인소개/유튜브/홈페이지/기타
-  memo text,
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
-
--- 견적서 (작성/수정은 owner만, RLS로 강제)
-create table quotes (
-  id bigint generated always as identity primary key,
-  customer_id bigint references customers(id) on delete cascade,
-  type text check (type in ('simple','detailed')),
-  amount numeric,
-  content text,
-  status text default 'draft', -- draft/confirmed
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
-
--- 정산/지급 (owner 전용, RLS로 강제)
-create table payments (
-  id bigint generated always as identity primary key,
-  customer_id bigint references customers(id) on delete cascade,
-  type text,       -- 계약금/중도금/잔금/인건비/업체비
-  amount numeric,
-  paid_to text,
-  paid_at date,
-  memo text,
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
-
--- 자재발주
-create table material_orders (
-  id bigint generated always as identity primary key,
-  customer_id bigint references customers(id) on delete cascade,
-  vendor_name text,
-  item text,
-  quantity text,
-  ordered_at date,
-  expected_arrival date,
-  arrived boolean default false,
-  memo text,
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
-
--- 포트폴리오 (홈페이지 PROJECTS/HOME이 공개 조회함)
-create table projects (
-  id bigint generated always as identity primary key,
-  title text not null,
-  category text,          -- 아파트/주택/기타
-  description text,
-  image_url text,         -- Storage public URL
-  image_path text,        -- Storage 내부 경로 (삭제 시 사용)
+  color text not null,
   sort_order int default 0,
-  created_by uuid references profiles(id),
   created_at timestamptz default now()
 );
+-- RLS: 로그인 사용자 전체 권한 (select/insert/update/delete 4개 정책)
 
--- 공정표(캘린더)
-create table schedule_items (
-  id bigint generated always as identity primary key,
-  customer_id bigint references customers(id) on delete set null,  -- null이면 "이슈/메모"
-  item_date date not null,
-  content text not null,
-  created_by uuid references profiles(id),
-  created_at timestamptz default now()
-);
+-- 현장 상세 페이지의 체크리스트 / 현장보고 / 마감디테일 / 도면(파일)
+create table site_checklists (id, customer_id→customers, content, done, sort_order, created_by, created_at);
+create table site_reports    (id, customer_id→customers, report_date, content, created_by, created_at);
+create table finish_details  (id, customer_id→customers, category, content, sort_order, created_by, created_at);
+create table site_files      (id, customer_id→customers, file_url, file_path, label, sort_order, created_by, created_at);
+-- 위 4개 모두: RLS "for all using (auth.uid() is not null) with check (auth.uid() is not null)" 정책 1개씩
+-- site_files는 기존 "portfolio" Storage 버킷을 재사용 (경로 접두사 sitefiles/{customer_id}/... 로만 구분, 새 버킷 안 만듦)
 ```
 
-### 5.4 RLS(Row Level Security) 정책 요약
+**주의**: `customers.address` 컬럼은 DB에 여전히 존재하지만, 폼에서 없앴습니다(주소는 이제 `memo`에 자유롭게 적도록 통일). 기존 레코드의 `address` 값은 남아있을 수 있으나 UI 어디에도 표시되지 않습니다. 필요시 컬럼 자체를 나중에 정리해도 됩니다(지금은 그냥 방치).
 
-| 테이블 | 조회(select) | 등록/수정 | 비고 |
-|---|---|---|---|
-| customers | 로그인 사용자 | 등록: 누구나(익명 포함, 홈페이지 폼용) / 수정: 로그인 사용자 | |
-| quotes | 로그인 사용자 | insert/update: `profiles.role='owner'`만 | 직원은 조회만 |
-| payments | `profiles.role='owner'`만 (전체 작업) | 위와 동일 | 직원 완전 차단 |
-| material_orders | 로그인 사용자 | 로그인 사용자 | |
-| projects | **전체 공개**(익명 포함, 홈페이지용) | insert/update/delete: 로그인 사용자 | |
-| schedule_items | 로그인 사용자 | 로그인 사용자 (delete 포함) | |
-| profiles | 로그인 사용자 | (별도 insert 정책 없음, SQL로 직접 등록) | |
+RLS 정책 요약(1차 문서 표에 추가):
 
-실제 정책은 각 테이블에 `create policy ...` 형태로 개별 실행되어 있습니다. 정확한 정책명과 조건은 Supabase 대시보드 → Authentication → Policies에서 확인 가능합니다.
-
-### 5.5 Storage
-- 버킷명: `portfolio` (Public 버킷)
-- 정책: 조회는 전체 공개, insert/update/delete는 로그인 사용자만 (`storage.objects`에 대한 정책 4개 실행됨)
-- 포트폴리오 관리 화면(`admin/portfolio.html`)에서 사진을 올리면 `{timestamp}-{파일명}` 형태의 경로로 저장되고, public URL이 `projects.image_url`에 저장됩니다.
+| 테이블 | 비고 |
+|---|---|
+| customers | 이제 delete 가능 (로그인 사용자) |
+| schedule_categories | 로그인 사용자 전체 권한 |
+| site_checklists / site_reports / finish_details / site_files | 로그인 사용자 전체 권한, customer_id로 연결 |
 
 ---
 
-## 6. GitHub / 배포 워크플로
+## 6. 공정표 관련 화면 — 이번 세션 핵심 작업 (매우 중요, 꼭 읽어주세요)
 
-- 저장소: `kwonterior/studio-kwonteria-site` (Public)
-- 배포: Vercel이 GitHub 저장소를 Import해서 연결되어 있고, `main` 브랜치에 커밋이 push되면 자동으로 재배포됩니다. 별도 빌드 명령/환경변수 설정 없음 (정적 파일 그대로 서빙).
-- **GitHub Personal Access Token 발급됨**: 대표님이 fine-grained PAT을 만들어서 Cowork 세션에 전달했으나, Cowork의 sandbox 환경이 `github.com`에 대한 네트워크 접근 자체를 막고 있어 `git push`나 GitHub API 호출에 사용하지 못했습니다 (이게 Claude Code로 이관하는 주된 이유입니다 — Claude Code는 로컬에서 실행되므로 이 네트워크 제약이 없어 git을 통한 직접 push/배포 자동화가 가능할 것으로 예상됩니다). 토큰 자체는 대표님이 별도로 안전하게 전달해야 하며, 이 문서에는 포함하지 않았습니다. 권한 범위는 이 저장소 1개, Contents: Read and write로 한정되어 있습니다.
-- 지금까지의 실제 업로드 방식: Cowork가 바탕화면 `studio-kwonteria-site` 폴더에 파일을 만들면, 대표님이 그 폴더 내용을 GitHub 업로드 화면(`/upload/main` 또는 `/upload/main/{경로}`)에 드래그해서 커밋하는 수동 방식이었습니다. Claude Code로는 `git add / commit / push`로 대체 가능합니다.
+### 6.1 실제 엑셀 데이터 이관
+대표님이 실제로 쓰던 엑셀 공정표(`공정표(26년).xlsx`, 바탕화면)에서 2026년 8~11월 데이터를 파싱해서 `schedule_items`에 229건, 신규 현장 9개를 `customers`에 등록했습니다 (상태는 실제 진행 상황에 맞게 계약/공사중/준공으로 구분). 향후 비슷한 대량 이관이 필요하면 PowerShell + Excel COM으로 직접 엑셀을 읽는 방식을 썼습니다(파이썬이 이 컴퓨터에 제대로 설치되어 있지 않음 — Windows Store 스텁만 있음).
 
----
+### 6.2 `admin/schedule.html` (공정표) 현재 동작
+- **첫 화면 = 달력만 보임.** "일정 등록" 폼과 "빠른 추가" 팔레트는 `#entry-panel`에 들어있고 기본 `display:none`입니다. 날짜의 "+ 추가"를 누르거나 기존 일정을 클릭해야 `openEntryPanel()`이 패널을 열어줍니다. "취소"를 누르면 다시 닫힙니다. **이 패턴을 절대 되돌리지 마세요** — 초기 버전은 폼이 항상 위에 떠 있어서 "지저분하다"는 피드백을 받고 고친 것입니다.
+- **"현장 보기" 필터 칩**: 특정 현장을 클릭하면 그 현장만 강조된 월별 달력(day-grid, `renderDayGrid`)이 나오고, 진행률(%)·비고(remark)가 위에 표시됩니다.
+- **"전체 보기"(현장 필터 없음)**: `renderSiteTable()`이 렌더링하며, **반드시 "세로형" — 날짜가 행(위→아래), 현장이 열(좌→우)** 입니다. 가로형(현장이 행, 날짜가 열)은 여러 번 시도했다가 "가로 스크롤 생겨서 안 좋다"는 이유로 명시적으로 폐기됐습니다. **다시 가로형이나, 주 단위로 쪼개서 세로로 쌓는 방식, 점/막대/이니셜 배지로 압축하는 방식으로 되돌리지 마세요** — 전부 시도했다가 반려됐습니다. 이유: 대표님이 이 화면을 캡처해서 외주 작업팀(전기팀 등, 관리자페이지 접근 권한 없음)에게 그대로 보내기 때문에 "글자로 현장+작업내용이 확실히 보이는 것"이 최우선입니다.
+- 현장 색상: `SITE_COLORS` 12색 배열(Tableau 계열) + `colorFor(id) = SITE_COLORS[id % 12]`. `schedule.html`, `schedule-share.html`, (site-detail은 단일 현장이라 색 구분 불필요) 전부 이 방식으로 통일.
+- 2026년 공휴일(대체공휴일 포함)이 `HOLIDAYS_2026` Set에 하드코딩되어 있음 — 연도 넘어가면 갱신 필요.
+- "빠른 추가" 카테고리 팔레트: 클릭하면 (날짜가 이미 선택된 상태면) 즉시 등록. "카테고리 편집" 버튼을 누르면 이름 클릭으로 수정(prompt), ×로 삭제, 드래그로 순서 변경, 하단 입력창으로 새 카테고리 추가 가능.
+- 상단에 "공유용 보기 ↗" 버튼 → `schedule-share.html`을 새 탭으로 엶.
 
-## 7. 완료된 기능
+### 6.3 `admin/schedule-share.html` (신규, 사이드바 없음)
+- 목적: 작업팀에게 캡처해서 보내기 위한 화면. **세로형(날짜=행, 현장=열) 표 하나만 있습니다** (가로형 토글 버튼은 삭제됨 — "전체 공정표"라는 고정 라벨만 남음).
+- 한 주씩 옅은 줄무늬(week banding)로 구분되어 있어서 원래 엑셀 느낌과 비슷합니다.
+- 확정(●) 표시는 여기서는 제거됨 (관리용 `schedule.html`에는 남아있음 — 이건 의도적 차이).
+- "인쇄/PDF" 버튼 (`window.print()`) — `@page{size:landscape;}` 등 인쇄용 CSS를 넣었으나, **대표님이 실제로 인쇄 결과물을 확인 안 하셨을 수 있음. 다음 세션에서 먼저 물어볼 것.**
+- `requireAuth()`는 그대로 쓰지만 `#sidebar` 엘리먼트가 없어서 `renderSidebar()`가 조용히 no-op 됩니다 (의도된 동작, `admin-common.js`가 이미 그렇게 방어적으로 짜여 있음).
 
-**홈페이지**: HOME / ABOUT / PROJECTS(동적, Supabase 연동) / CONTACT(상담폼 → DB 저장). 반응형(모바일) 대응 완료. 시공 사진은 아직 미등록 상태 (관리자 포트폴리오 화면에서 등록 필요).
-
-**관리자페이지 (로그인 필요)**:
-- 대시보드: 최근 상담 문의 10건
-- 고객·상담 관리: 등록/수정 (삭제 기능 없음)
-- 견적서 관리: 등록/수정 (owner만, 삭제 기능 없음)
-- 정산·지급 관리: 등록/수정 (owner 전용, 삭제 기능 없음)
-- 자재발주 관리: 등록/수정 (삭제 기능 없음)
-- 포트폴리오 관리: 등록/수정/**삭제**, 사진 업로드(Storage 연동), 홈페이지에 실시간 반영
-- 공정표: 월별 캘린더 UI, 현장별 일정 + 이슈/메모, 등록/수정/**삭제**
-
-역할 구분: `owner`(전체 권한) / `employee`(정산·지급 접근 불가, 견적서는 조회만 가능).
-
----
-
-## 8. 남은 작업 / TODO (대표님이 언급했거나 설계상 다음 순서로 예정된 것들)
-
-1. **삭제 기능 보완**: customers, quotes, payments, materials 화면에는 삭제 버튼이 없습니다. 필요 여부를 대표님께 확인 후 추가 권장.
-2. **시공 사진 등록**: 관리자 포트폴리오 화면에서 실제 사진 11~12장 등록 필요 (현재 홈페이지 PROJECTS는 빈 상태).
-3. **2순위 기능 (아직 미착수)**: 현장 사진 관리(공사 진행 사진 앨범), A/S 관리
-4. **3순위 (회사 성장 시)**: 매출/손익 통계, 자동 알림(발주/결제/미수금 등), 세 번째 이상 직원 채용 시 역할 추가
-5. **홈페이지 채용 섹션**: 디자이너 채용 시점에 CONTACT 페이지에 채용 문의 섹션 추가 예정이었음 (아직 미착수)
-6. **자동화 파이프라인**: 위 6번 항목의 GitHub PAT을 활용해 Claude Code에서 git 기반 자동 push/배포로 전환하는 것을 권장.
+### 6.4 `admin/site-detail.html` (신규)
+- `customers.html` 목록에서 고객 이름을 클릭하면 `site-detail.html?id={id}`로 이동.
+- 상단: 이름/상태뱃지/연락처·지역·평수·예산·유입경로(빈 값은 숨김)/메모(줄바꿈 유지, `white-space:pre-wrap`)/견적 요약/"정보 수정"(customers.html로 링크).
+- 탭 5개: **진행 일정**(그 현장 전용 달력, 이름 라벨 생략, 진행률%+비고, 등록폼도 마찬가지로 클릭해야 나타남) / **체크리스트** / **현장 보고**(날짜+내용) / **마감 디테일**(항목+내용) / **도면**(사진·파일 업로드, portfolio 버킷 재사용).
 
 ---
 
-## 9. 회사 정보 (컨텍스트 — 카피/디자인 결정 시 참고)
+## 7. `admin/customers.html` 변경 사항
+- 이름이 `site-detail.html` 링크로 바뀜.
+- **주소 입력칸 삭제** — 이제 메모에 주소/공동현관 비번/세대 비번을 줄바꿔서 적도록 안내(placeholder 있음, textarea 6행으로 확대).
+- **평수를 자유입력 → 드롭다운**(20평대/30평대/40평대/50평대/60평대/기타)으로 변경. 기존 데이터 중 "32평" 등 형식이 다른 값은 드롭다운과 안 맞아서 대표님이 다시 골라야 할 수 있음.
+- **삭제 버튼 추가** (되돌릴 수 없고, 연결된 견적서/정산/자재발주/공정표까지 cascade 삭제됨을 confirm 문구에 명시).
+- ⚠️ 과거 버그 메모: 삭제 버튼의 `onclick` 속성을 큰따옴표로 감싸고 안에서 `JSON.stringify()`를 쓰면 따옴표가 충돌해서 버튼이 조용히 깨집니다(클릭해도 아무 반응 없음). `editRow`처럼 **onclick은 항상 홑따옴표로 감쌀 것**.
+
+---
+
+## 8. 남은 작업 / TODO
+
+1. **견적서/정산/자재발주 삭제 버튼** — 아직 없음. "그건 추후에 얘기할게"라고 보류된 상태. 다음에 요청하면 `customers.html` 패턴(홑따옴표 onclick + cascade 경고 문구) 그대로 적용.
+2. **인쇄/PDF 결과물 확인** — `schedule-share.html`의 인쇄 버튼을 대표님이 실제로 눌러서 landscape PDF가 잘 나오는지 아직 확인 안 됨. 먼저 물어볼 것.
+3. **시공 사진 등록** — 홈페이지 PROJECTS(포트폴리오)는 여전히 비어있음(관리자 포트폴리오 화면에서 등록 필요, 1차 문서부터 이어지는 TODO).
+4. **2순위**: 현장 진행사진 앨범(공사 중 사진, `site-detail.html`의 "도면" 탭과는 별개로 진행 단계별 사진첩 개념이면 새로 설계 필요), A/S 관리.
+5. **3순위**: 매출/손익 통계, 자동 알림, 직원 3명 이상 시 역할 추가.
+6. **홈페이지 채용 섹션** — 디자이너 채용 시점에 CONTACT 페이지에 추가 예정, 미착수.
+7. `customers.address` 컬럼 정리(선택) — 안 쓰지만 남아있음.
+
+---
+
+## 9. 회사 정보 (변경 없음, 1차 문서와 동일)
 
 - 상호명: 스튜디오 권테리어 / 사업자등록번호: 601-15-92480 / 주소: 경상북도 경주시 용황로8길 18
 - 활동 지역: 경주·포항 / 주요 고객: 아파트·주택 / 평균 공사금액 5천~6천만원, 월 평균 3건
-- 조직: 대표(전체 총괄) + 직원 1명(현장관리·시공) — 1년 내 디자이너 채용 예정
-- 유입 경로: 블로그, 인스타그램, 지인소개 (계약 전환 좋은 경로: 인스타, 블로그)
-- 브랜드 철학 3기둥: ① 선한 영향력 ② 합리적 가치 ③ 실력과 디자인 (전체 문구는 `about.html` 참고)
-- 홈페이지 목적 우선순위: 회사 신뢰도 > 지역 검색 노출 > 채용 (상담문의 최대화가 최우선 목적은 아님)
-- 가장 불편했던 업무(관리자페이지 설계 근거): 견적서 작성, 블로그 작성, 스케치업 디자인 작업이 번거로움. 정산(계약금/중도금/인건비 지급 시점)을 종종 기억 못 해서 문제가 됐음. 자재발주 내역을 따로 기록 안 해서 누락 위험 있었음.
+- 조직: 대표(권오성, 전체 총괄) + 직원 1명(기성수, 현장관리·시공) — 1년 내 디자이너 채용 예정
+- 유입 경로: 블로그, 인스타그램, 지인소개
+- 가장 불편했던 업무: 견적서 작성, 정산 시점 기억 못 함, 자재발주 기록 누락 → 이게 관리자페이지 설계 근거.
+- **실무 습관**: 대표님이 공정표를 캡처해서 전기팀 등 외주 작업자에게 직접 전달하고, 그들이 보고 스스로 일정 조정해서 현장에 들어옴. 관리자페이지 접근권한이 없는 외주 인력이 있다는 전제를 항상 고려할 것.
 
 ---
 
-## 10. 주의사항
+## 10. 주의사항 (1차 문서 + 추가)
 
-- 이 문서에는 비밀번호, service_role 키, DB 비밀번호, GitHub PAT 원문을 포함하지 않았습니다. 이관 시 별도의 보안 채널로 전달받아야 합니다.
-- `payments`(정산) 테이블은 직원 접근이 RLS로 완전히 차단되어 있습니다 — 관련 코드/정책 수정 시 이 제약이 깨지지 않도록 주의해야 합니다.
-- Supabase publishable key는 공개되어도 안전하지만, 그렇다고 RLS 정책 없이 테이블을 만들면 안 됩니다 (모든 테이블이 RLS enabled 상태여야 함).
+- 비밀번호/service_role 키/DB 비밀번호/GitHub PAT 원문은 이 문서에도, 대화 로그 검색으로도 남기지 않았습니다. 필요하면 대표님께 요청.
+- `payments` 테이블은 직원 접근 RLS로 완전 차단 — 유지할 것.
+- 모든 새 테이블은 RLS enabled 상태로 만들었음(확인됨).
+- **GitHub PAT은 Windows Credential Manager에 저장되어 있어 `git push`가 바로 동작합니다** — 3번 섹션 참고.
