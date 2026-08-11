@@ -159,6 +159,32 @@ function shiftMonth(delta){
     render();
   });
   document.getElementById("print-btn").addEventListener("click", ()=>window.print());
+
+  window.addEventListener("beforeprint", () => {
+    const table = document.querySelector(".sched-table");
+    const wrap = document.querySelector(".sched-table-wrap");
+    if (!table || !wrap) return;
+    wrap.style.transform = "";
+    wrap.style.width = "";
+    wrap.style.height = "";
+    const mmToPx = 96 / 25.4;
+    const usablePx = (297 - 20) * mmToPx; // A4 가로 폭 - 여백(10mm x2)
+    const rawWidth = table.scrollWidth;
+    const rawHeight = table.scrollHeight;
+    const scale = Math.min(1, usablePx / rawWidth);
+    wrap.style.transformOrigin = "top left";
+    wrap.style.transform = `scale(${scale})`;
+    wrap.style.width = (rawWidth * scale) + "px";
+    wrap.style.height = (rawHeight * scale) + "px";
+  });
+  window.addEventListener("afterprint", () => {
+    const wrap = document.querySelector(".sched-table-wrap");
+    if (wrap) {
+      wrap.style.transform = "";
+      wrap.style.width = "";
+      wrap.style.height = "";
+    }
+  });
 })();
 </script>
 </body>
