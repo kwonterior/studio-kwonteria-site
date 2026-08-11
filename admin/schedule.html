@@ -92,6 +92,7 @@ let categoriesCache = [];
 let catEditMode = false;
 let viewYear, viewMonth; // viewMonth: 1-12
 let selectedCustomerId = null;
+let isOwner = false;
 
 // 색상끼리 최대한 겹치지 않도록 색상환에서 고르게 떨어진 12색
 const SITE_COLORS = ["#4E79A7","#F28E2B","#59A14F","#E15759","#B07AA1","#9C755F","#76B7B2","#D37295","#EDC948","#6B6ECF","#BAB0AC","#B5544A"];
@@ -330,12 +331,13 @@ function renderDayGrid(data, daysInMonth) {
       <div class="cal-cell ${isToday} ${dim}" data-date="${dateStr}">
         <div class="daynum"${daynumColor ? ` style="color:${daynumColor};"` : ""}>${d}</div>
         ${itemsHtml}
-        <div class="cal-add-link" data-date="${dateStr}">+ 추가</div>
+        ${isOwner ? `<div class="cal-add-link" data-date="${dateStr}">+ 추가</div>` : ""}
       </div>`;
   }
 
   grid.innerHTML = html;
 
+  if (!isOwner) return;
   grid.querySelectorAll(".cal-item").forEach(el => {
     el.addEventListener("click", (e) => {
       if (e.target.classList.contains("confirm-toggle")) return;
@@ -422,6 +424,7 @@ function renderSiteTable(data, daysInMonth) {
       loadAndRenderCalendar();
     });
   });
+  if (!isOwner) return;
   document.querySelectorAll(".cell-chip").forEach(el => {
     el.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -470,6 +473,7 @@ function shiftMonth(delta) {
 (async () => {
   const auth = await requireAuth();
   if (!auth) return;
+  isOwner = auth.profile.role === "owner";
 
   const now = new Date();
   viewYear = now.getFullYear();

@@ -147,6 +147,7 @@ let editingId = null;
 let categoriesCache = [];
 let viewYear, viewMonth;
 let customer = null;
+let isOwner = false;
 
 const HOLIDAYS_2026 = new Set([
   "2026-01-01","2026-02-16","2026-02-17","2026-02-18","2026-03-01","2026-03-02",
@@ -285,11 +286,12 @@ async function loadAndRenderCalendar() {
       <div class="cal-cell ${isToday}" data-date="${dateStr}">
         <div class="daynum"${daynumColor ? ` style="color:${daynumColor};"` : ""}>${d}</div>
         ${itemsHtml}
-        <div class="cal-add-link" data-date="${dateStr}">+ 추가</div>
+        ${isOwner ? `<div class="cal-add-link" data-date="${dateStr}">+ 추가</div>` : ""}
       </div>`;
   }
   grid.innerHTML = html;
 
+  if (!isOwner) return;
   grid.querySelectorAll(".cal-item").forEach(el => {
     el.addEventListener("click", (e) => {
       if (e.target.classList.contains("confirm-toggle")) return;
@@ -443,6 +445,7 @@ document.querySelectorAll(".tabbtn").forEach(btn => {
 (async () => {
   const auth = await requireAuth();
   if (!auth) return;
+  isOwner = auth.profile.role === "owner";
   if (!customerId) { document.getElementById("site-head").innerHTML = "잘못된 접근입니다."; return; }
 
   await loadHead();
