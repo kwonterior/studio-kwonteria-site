@@ -1,3 +1,11 @@
+// 이미지 로드 실패 시 깨진 아이콘 대신 플레이스홀더로 교체
+function imgFallback(el) {
+  const div = document.createElement("div");
+  div.className = "ph-image";
+  div.textContent = "사진 준비중";
+  el.replaceWith(div);
+}
+
 // 모바일 메뉴 토글 + 연락처 자동 채우기 + 상담폼 전송
 document.addEventListener("DOMContentLoaded", () => {
   // 전화/카카오 링크 자동 채우기

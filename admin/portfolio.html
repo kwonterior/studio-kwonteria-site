@@ -63,6 +63,14 @@
 <script>
 let editingId = null;
 
+// 이미지 로드 실패 시 깨진 아이콘 대신 "사진 없음" 표시로 교체
+function imgFallback(el) {
+  const span = document.createElement("span");
+  span.textContent = "사진 없음";
+  span.style.cssText = "display:inline-flex;align-items:center;justify-content:center;color:var(--sub);font-size:11px;background:var(--bg);border-radius:4px;padding:4px 8px;";
+  el.replaceWith(span);
+}
+
 async function loadList() {
   const { data, error } = await sbClient.from("projects").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false });
   const tbody = document.getElementById("list-body");
@@ -71,7 +79,7 @@ async function loadList() {
   if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">등록된 시공 사례가 없습니다</td></tr>`; return; }
   tbody.innerHTML = data.map(p => `
     <tr>
-      <td>${p.image_url ? `<img src="${p.image_url}" style="width:70px;height:52px;object-fit:cover;border-radius:4px;">` : "-"}</td>
+      <td>${p.image_url ? `<img src="${p.image_url}" style="width:70px;height:52px;object-fit:cover;border-radius:4px;" onerror="imgFallback(this)">` : "-"}</td>
       <td>${p.title}</td>
       <td>${p.category || "-"}</td>
       <td>${p.sort_order ?? 0}</td>
@@ -93,7 +101,7 @@ function editRow(p) {
   form.description.value = p.description || "";
   form.image_path.value = p.image_path || "";
   form.image_url.value = p.image_url || "";
-  document.getElementById("current-image-preview").innerHTML = p.image_url ? `현재 사진: <img src="${p.image_url}" style="width:100px;display:block;margin-top:6px;border-radius:4px;">` : "";
+  document.getElementById("current-image-preview").innerHTML = p.image_url ? `현재 사진: <img src="${p.image_url}" style="width:100px;display:block;margin-top:6px;border-radius:4px;" onerror="imgFallback(this)">` : "";
   document.getElementById("form-title").textContent = p.title + " 수정";
   document.getElementById("submit-btn").textContent = "수정 저장";
   document.getElementById("cancel-edit").style.display = "inline-flex";

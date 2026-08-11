@@ -142,7 +142,7 @@
   grid.innerHTML = data.map(p => `
     <div class="project-card">
       ${p.image_url
-        ? `<img src="${p.image_url}" alt="${p.title}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;margin-bottom:12px;">`
+        ? `<img src="${p.image_url}" alt="${p.title}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;margin-bottom:12px;" onerror="imgFallback(this)">`
         : `<div class="ph-image">사진 준비중</div>`}
       <div class="name">${p.title}</div>
       <div class="tag">${p.category || ""}</div>
