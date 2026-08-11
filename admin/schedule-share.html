@@ -21,18 +21,6 @@ body{padding:0;}
   position:sticky;left:0;background:var(--card);z-index:1;text-align:left;
   font-weight:700;white-space:nowrap;border-right:2px solid var(--line);padding-left:10px;
 }
-
-@page{ size:landscape; margin:10mm; }
-@media print{
-  .sharetools, .no-print{display:none;}
-  body{background:#fff;}
-  .sharewrap{padding:0;max-width:none;}
-  .sched-table-wrap{overflow:visible;border:none;}
-  .sched-table{font-size:10px;}
-  .sched-table th, .sched-table td{padding:3px 4px;}
-  .cell-chip{padding:0 3px;}
-  tr{break-inside:avoid;}
-}
 </style>
 </head>
 <body data-page="schedule-share.html">
@@ -42,13 +30,12 @@ body{padding:0;}
       <div class="title" id="share-title">공정표</div>
       <div class="sub">화면을 그대로 캡처해서 작업팀에 공유하세요</div>
     </div>
-    <div class="sharetools no-print">
+    <div class="sharetools">
       <a href="schedule.html" class="btn btn-ghost btn-sm">‹ 관리자페이지로</a>
       <button class="btn btn-ghost btn-sm" id="prev-month">이전달</button>
       <button class="btn btn-ghost btn-sm" id="today-btn">이번달</button>
       <button class="btn btn-ghost btn-sm" id="next-month">다음달</button>
       <span class="modebtn active" style="cursor:default;">전체 공정표</span>
-      <button class="btn btn-primary btn-sm" id="print-btn">인쇄/PDF</button>
     </div>
   </div>
 
@@ -157,33 +144,6 @@ function shiftMonth(delta){
     viewYear = n.getFullYear();
     viewMonth = n.getMonth()+1;
     render();
-  });
-  document.getElementById("print-btn").addEventListener("click", ()=>window.print());
-
-  window.addEventListener("beforeprint", () => {
-    const table = document.querySelector(".sched-table");
-    const wrap = document.querySelector(".sched-table-wrap");
-    if (!table || !wrap) return;
-    wrap.style.transform = "";
-    wrap.style.width = "";
-    wrap.style.height = "";
-    const mmToPx = 96 / 25.4;
-    const usablePx = (297 - 20) * mmToPx; // A4 가로 폭 - 여백(10mm x2)
-    const rawWidth = table.scrollWidth;
-    const rawHeight = table.scrollHeight;
-    const scale = Math.min(1, usablePx / rawWidth);
-    wrap.style.transformOrigin = "top left";
-    wrap.style.transform = `scale(${scale})`;
-    wrap.style.width = (rawWidth * scale) + "px";
-    wrap.style.height = (rawHeight * scale) + "px";
-  });
-  window.addEventListener("afterprint", () => {
-    const wrap = document.querySelector(".sched-table-wrap");
-    if (wrap) {
-      wrap.style.transform = "";
-      wrap.style.width = "";
-      wrap.style.height = "";
-    }
   });
 })();
 </script>
