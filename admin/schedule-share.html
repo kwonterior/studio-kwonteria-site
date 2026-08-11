@@ -22,9 +22,16 @@ body{padding:0;}
   font-weight:700;white-space:nowrap;border-right:2px solid var(--line);padding-left:10px;
 }
 
+@page{ size:landscape; margin:10mm; }
 @media print{
   .sharetools, .no-print{display:none;}
   body{background:#fff;}
+  .sharewrap{padding:0;max-width:none;}
+  .sched-table-wrap{overflow:visible;border:none;}
+  .sched-table{font-size:10px;}
+  .sched-table th, .sched-table td{padding:3px 4px;}
+  .cell-chip{padding:0 3px;}
+  tr{break-inside:avoid;}
 }
 </style>
 </head>
@@ -94,8 +101,9 @@ async function render(){
   const todayStr = new Date().toISOString().slice(0,10);
 
   function chip(it, color){
-    return `<span class="cell-chip" style="background:${color}22;color:${color};">${it.confirmed?"● ":""}${it.content}</span>`;
+    return `<span class="cell-chip" style="background:${color}22;color:${color};">${it.content}</span>`;
   }
+  const firstDow = new Date(viewYear, viewMonth-1, 1).getDay();
 
   if (mode === "h") {
     let head = `<th class="sitecol">현장</th>`;
@@ -143,7 +151,9 @@ async function render(){
       let c = "";
       if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
       else if (dow===6) c = "color:#2b5fc0;";
-      const rowBg = dateStr===todayStr ? "background:#eaf5ea;" : "";
+      const weekIndex = Math.floor((d - 1 + firstDow) / 7);
+      const bandBg = weekIndex % 2 !== 0 ? "background:var(--bg);" : "";
+      const rowBg = dateStr===todayStr ? "background:#eaf5ea;" : bandBg;
       let cells = sites.map(site=>{
         const its = itemsByKey[`${dateStr}|${site.id}`] || [];
         return `<td style="${rowBg}">${its.map(it=>chip(it,colorFor(site.id))).join("")}</td>`;
