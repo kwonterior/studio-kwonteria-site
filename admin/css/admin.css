@@ -169,6 +169,13 @@ tbody tr:hover{background:#faf8f4;}
   font-size:12.5px;
 }
 .sched-table td.sitecol:hover{background:var(--bg);}
+.sched-table td.datecol,.sched-table th.datecol{
+  position:sticky;left:0;background:var(--card);z-index:1;text-align:left;
+  font-weight:700;white-space:nowrap;border-right:2px solid var(--line);cursor:default;padding-left:10px;
+  font-size:12px;
+}
+.sched-table th.sitecol-head{cursor:pointer;}
+.sched-table th.sitecol-head:hover{text-decoration:underline;}
 .cell-chip{
   display:inline-block;padding:1px 4px;border-radius:4px;font-size:10.5px;font-weight:700;
   margin:1px;cursor:pointer;

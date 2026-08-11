@@ -362,6 +362,7 @@ function renderDayGrid(data, daysInMonth) {
 
 function renderSiteTable(data, daysInMonth) {
   const todayStr = new Date().toISOString().slice(0, 10);
+  const firstDow = new Date(viewYear, viewMonth - 1, 1).getDay();
 
   const itemsByKey = {}; // `${date}|${customerId||issue}` -> items[]
   data.forEach(it => {
@@ -373,49 +374,47 @@ function renderSiteTable(data, daysInMonth) {
   const sites = customersCache.filter(c => activeSiteIds.includes(c.id));
   const hasIssue = data.some(it => !it.customer_id);
 
-  let headRow = `<th class="sitecol">현장</th>`;
+  function chip(it, color) {
+    return `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.confirmed ? "● " : ""}${it.content}</span>`;
+  }
+
+  let headRow = `<th class="datecol">날짜</th>` +
+    sites.map(s => `<th class="sitecol-head" data-id="${s.id}" style="color:${colorFor(s.id)};">${s.name}</th>`).join("");
+  if (hasIssue) headRow += `<th style="color:var(--sub);">특이사항</th>`;
+
+  let bodyRows = "";
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = toISO(viewYear, viewMonth, d);
     const dow = new Date(viewYear, viewMonth - 1, d).getDay();
     let c = "";
     if (isHoliday(dateStr) || dow === 0) c = "color:#c0392b;";
     else if (dow === 6) c = "color:#2b5fc0;";
-    const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
-    headRow += `<th style="${c}${todayBg}">${d}<br><span style="font-weight:400;font-size:10px;">${DOW_LABELS[dow]}</span></th>`;
-  }
+    const weekIndex = Math.floor((d - 1 + firstDow) / 7);
+    const bandBg = weekIndex % 2 !== 0 ? "background:var(--bg);" : "";
+    const cellBg = dateStr === todayStr ? "background:#eaf5ea;" : bandBg;
 
-  function rowCells(key, color) {
-    let cells = "";
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = toISO(viewYear, viewMonth, d);
-      const items = itemsByKey[`${dateStr}|${key}`] || [];
-      const todayBg = dateStr === todayStr ? "background:#eaf5ea;" : "";
-      const chips = items.map(it =>
-        `<span class="cell-chip" data-id="${it.id}" style="background:${color}22;color:${color};">${it.confirmed ? "● " : ""}${it.content}</span>`
-      ).join("");
-      cells += `<td style="${todayBg}" data-date="${dateStr}" data-site="${key === "issue" ? "" : key}">${chips}</td>`;
+    let cells = sites.map(site => {
+      const items = itemsByKey[`${dateStr}|${site.id}`] || [];
+      const color = colorFor(site.id);
+      return `<td style="${cellBg}" data-date="${dateStr}" data-site="${site.id}">${items.map(it => chip(it, color)).join("")}</td>`;
+    }).join("");
+    if (hasIssue) {
+      const items = itemsByKey[`${dateStr}|issue`] || [];
+      cells += `<td style="${cellBg}" data-date="${dateStr}" data-site="">${items.map(it => chip(it, "#71695f")).join("")}</td>`;
     }
-    return cells;
+    bodyRows += `<tr><td class="datecol" style="${c}${cellBg}">${d} (${DOW_LABELS[dow]})</td>${cells}</tr>`;
   }
-
-  let bodyRows = sites.map(site => {
-    const color = colorFor(site.id);
-    return `<tr><td class="sitecol" data-id="${site.id}" style="color:${color};">${site.name}</td>${rowCells(site.id, color)}</tr>`;
-  }).join("");
-  if (hasIssue) {
-    bodyRows += `<tr><td class="sitecol" style="color:var(--sub);">특이사항</td>${rowCells("issue", "#71695f")}</tr>`;
-  }
-  if (!bodyRows) {
-    bodyRows = `<tr><td class="sitecol" style="color:var(--sub);">등록된 일정 없음</td>${Array.from({length:daysInMonth}, () => "<td></td>").join("")}</tr>`;
+  if (!sites.length && !hasIssue) {
+    bodyRows = `<tr><td class="datecol" style="color:var(--sub);">이번 달엔 등록된 일정이 없습니다</td></tr>`;
   }
 
   document.getElementById("table-view").innerHTML = `
-    <div class="sched-table-wrap"><table class="sched-table">
+    <div class="sched-table-wrap"><table class="sched-table vtable">
       <thead><tr>${headRow}</tr></thead>
       <tbody>${bodyRows}</tbody>
     </table></div>`;
 
-  document.querySelectorAll(".sched-table td.sitecol[data-id]").forEach(el => {
+  document.querySelectorAll(".sched-table th.sitecol-head[data-id]").forEach(el => {
     el.addEventListener("click", () => {
       selectedCustomerId = Number(el.dataset.id);
       renderFilters();

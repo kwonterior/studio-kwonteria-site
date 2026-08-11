@@ -47,8 +47,7 @@ body{padding:0;}
       <button class="btn btn-ghost btn-sm" id="prev-month">이전달</button>
       <button class="btn btn-ghost btn-sm" id="today-btn">이번달</button>
       <button class="btn btn-ghost btn-sm" id="next-month">다음달</button>
-      <button class="modebtn active" id="mode-h">가로형 (현장→행)</button>
-      <button class="modebtn" id="mode-v">세로형 (날짜→행)</button>
+      <span class="modebtn active" style="cursor:default;">전체 공정표</span>
       <button class="btn btn-primary btn-sm" id="print-btn">인쇄/PDF</button>
     </div>
   </div>
@@ -59,7 +58,7 @@ body{padding:0;}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/admin-common.js"></script>
 <script>
-let viewYear, viewMonth, mode = "h";
+let viewYear, viewMonth;
 let customersCache = [];
 
 const SITE_COLORS = ["#4E79A7","#F28E2B","#59A14F","#E15759","#B07AA1","#9C755F","#76B7B2","#D37295","#EDC948","#6B6ECF","#BAB0AC","#B5544A"];
@@ -105,70 +104,32 @@ async function render(){
   }
   const firstDow = new Date(viewYear, viewMonth-1, 1).getDay();
 
-  if (mode === "h") {
-    let head = `<th class="sitecol">현장</th>`;
-    for (let d=1; d<=daysInMonth; d++){
-      const dateStr = toISO(viewYear, viewMonth, d);
-      const dow = new Date(viewYear, viewMonth-1, d).getDay();
-      let c = "";
-      if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
-      else if (dow===6) c = "color:#2b5fc0;";
-      const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
-      head += `<th style="${c}${tb}">${d}<br><span style="font-weight:400;font-size:10px;">${DOW_LABELS[dow]}</span></th>`;
-    }
-    let body = sites.map(site=>{
-      const color = colorFor(site.id);
-      let cells = "";
-      for (let d=1; d<=daysInMonth; d++){
-        const dateStr = toISO(viewYear, viewMonth, d);
-        const its = itemsByKey[`${dateStr}|${site.id}`] || [];
-        const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
-        cells += `<td style="${tb}">${its.map(it=>chip(it,color)).join("")}</td>`;
-      }
-      return `<tr><td class="sitecol" style="color:${color};">${site.name}</td>${cells}</tr>`;
+  let head = `<th class="datecol">날짜</th>` + sites.map(s=>`<th style="color:${colorFor(s.id)};">${s.name}</th>`).join("");
+  if (hasIssue) head += `<th style="color:var(--sub);">특이사항</th>`;
+  let body = "";
+  for (let d=1; d<=daysInMonth; d++){
+    const dateStr = toISO(viewYear, viewMonth, d);
+    const dow = new Date(viewYear, viewMonth-1, d).getDay();
+    let c = "";
+    if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
+    else if (dow===6) c = "color:#2b5fc0;";
+    const weekIndex = Math.floor((d - 1 + firstDow) / 7);
+    const bandBg = weekIndex % 2 !== 0 ? "background:var(--bg);" : "";
+    const rowBg = dateStr===todayStr ? "background:#eaf5ea;" : bandBg;
+    let cells = sites.map(site=>{
+      const its = itemsByKey[`${dateStr}|${site.id}`] || [];
+      return `<td style="${rowBg}">${its.map(it=>chip(it,colorFor(site.id))).join("")}</td>`;
     }).join("");
     if (hasIssue) {
-      let cells = "";
-      for (let d=1; d<=daysInMonth; d++){
-        const dateStr = toISO(viewYear, viewMonth, d);
-        const its = itemsByKey[`${dateStr}|issue`] || [];
-        const tb = dateStr===todayStr ? "background:#eaf5ea;" : "";
-        cells += `<td style="${tb}">${its.map(it=>chip(it,"#71695f")).join("")}</td>`;
-      }
-      body += `<tr><td class="sitecol" style="color:var(--sub);">특이사항</td>${cells}</tr>`;
+      const its = itemsByKey[`${dateStr}|issue`] || [];
+      cells += `<td style="${rowBg}">${its.map(it=>chip(it,"#71695f")).join("")}</td>`;
     }
-    document.getElementById("table-area").innerHTML = `
-      <div class="sched-table-wrap"><table class="sched-table">
-        <thead><tr>${head}</tr></thead><tbody>${body}</tbody>
-      </table></div>`;
-  } else {
-    let head = `<th class="datecol">날짜</th>` + sites.map(s=>`<th style="color:${colorFor(s.id)};">${s.name}</th>`).join("");
-    if (hasIssue) head += `<th style="color:var(--sub);">특이사항</th>`;
-    let body = "";
-    for (let d=1; d<=daysInMonth; d++){
-      const dateStr = toISO(viewYear, viewMonth, d);
-      const dow = new Date(viewYear, viewMonth-1, d).getDay();
-      let c = "";
-      if (isHoliday(dateStr) || dow===0) c = "color:#c0392b;";
-      else if (dow===6) c = "color:#2b5fc0;";
-      const weekIndex = Math.floor((d - 1 + firstDow) / 7);
-      const bandBg = weekIndex % 2 !== 0 ? "background:var(--bg);" : "";
-      const rowBg = dateStr===todayStr ? "background:#eaf5ea;" : bandBg;
-      let cells = sites.map(site=>{
-        const its = itemsByKey[`${dateStr}|${site.id}`] || [];
-        return `<td style="${rowBg}">${its.map(it=>chip(it,colorFor(site.id))).join("")}</td>`;
-      }).join("");
-      if (hasIssue) {
-        const its = itemsByKey[`${dateStr}|issue`] || [];
-        cells += `<td style="${rowBg}">${its.map(it=>chip(it,"#71695f")).join("")}</td>`;
-      }
-      body += `<tr><td class="datecol" style="${c}${rowBg}">${d} (${DOW_LABELS[dow]})</td>${cells}</tr>`;
-    }
-    document.getElementById("table-area").innerHTML = `
-      <div class="sched-table-wrap"><table class="sched-table vtable">
-        <thead><tr>${head}</tr></thead><tbody>${body}</tbody>
-      </table></div>`;
+    body += `<tr><td class="datecol" style="${c}${rowBg}">${d} (${DOW_LABELS[dow]})</td>${cells}</tr>`;
   }
+  document.getElementById("table-area").innerHTML = `
+    <div class="sched-table-wrap"><table class="sched-table vtable">
+      <thead><tr>${head}</tr></thead><tbody>${body}</tbody>
+    </table></div>`;
 }
 
 function shiftMonth(delta){
@@ -195,18 +156,6 @@ function shiftMonth(delta){
     const n = new Date();
     viewYear = n.getFullYear();
     viewMonth = n.getMonth()+1;
-    render();
-  });
-  document.getElementById("mode-h").addEventListener("click", ()=>{
-    mode = "h";
-    document.getElementById("mode-h").classList.add("active");
-    document.getElementById("mode-v").classList.remove("active");
-    render();
-  });
-  document.getElementById("mode-v").addEventListener("click", ()=>{
-    mode = "v";
-    document.getElementById("mode-v").classList.add("active");
-    document.getElementById("mode-h").classList.remove("active");
     render();
   });
   document.getElementById("print-btn").addEventListener("click", ()=>window.print());
