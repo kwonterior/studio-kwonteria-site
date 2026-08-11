@@ -443,7 +443,7 @@ function setForm(dateStr, item) {
   form.reset();
   editingId = item ? item.id : null;
   form.item_date.value = dateStr || item?.item_date || "";
-  form.customer_id.value = item?.customer_id || "";
+  form.customer_id.value = item ? (item.customer_id || "") : (selectedCustomerId !== null ? selectedCustomerId : "");
   form.content.value = item?.content || "";
   form.confirmed.checked = item?.confirmed || false;
   document.getElementById("form-title").textContent = editingId ? "일정 수정" : "일정 등록";
