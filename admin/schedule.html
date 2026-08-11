@@ -118,7 +118,7 @@ function pad2(n) { return String(n).padStart(2, "0"); }
 function toISO(y, m, d) { return `${y}-${pad2(m)}-${pad2(d)}`; }
 
 async function loadCustomerOptions() {
-  const { data } = await sbClient.from("customers").select("id,name,remark").order("created_at", { ascending: false });
+  const { data } = await sbClient.from("customers").select("id,name,remark,status").order("created_at", { ascending: false });
   customersCache = data || [];
   const sel = document.getElementById("customer-select");
   sel.innerHTML = `<option value="">이슈 / 메모 (현장 없음)</option>` +
@@ -213,7 +213,7 @@ function renderQuickAdd() {
 function renderFilters(){
   const row = document.getElementById("site-filters");
   const allChip = `<div class="chip ${selectedCustomerId===null?'selected':''}" data-id="">전체 보기</div>`;
-  const chips = customersCache.map(c=>{
+  const chips = customersCache.filter(c=>c.status!=="준공").map(c=>{
     const color = colorFor(c.id);
     const sel = selectedCustomerId===c.id ? "selected" : "";
     return `<div class="chip ${sel}" data-id="${c.id}" style="color:${color}"><span class="dot" style="background:${color}"></span>${c.name}</div>`;
