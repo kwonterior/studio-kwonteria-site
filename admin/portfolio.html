@@ -84,10 +84,10 @@ async function loadList() {
       <td>${p.category || "-"}</td>
       <td>${p.sort_order ?? 0}</td>
       <td>${fmtDate(p.created_at)}</td>
-      <td style="display:flex;gap:6px;">
+      <td><div style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(p)})'>수정</button>
         <button class="btn btn-ghost btn-sm" onclick='deleteRow(${p.id})'>삭제</button>
-      </td>
+      </div></td>
     </tr>
   `).join("");
 }

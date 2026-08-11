@@ -109,10 +109,10 @@ async function loadList() {
       <td>${c.budget || "-"}</td>
       <td><span class="badge status-${c.status}">${c.status || "-"}</span></td>
       <td>${c.source || "-"}</td>
-      <td style="display:flex;gap:6px;">
+      <td><div style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(c)})'>수정</button>
         <button class="btn btn-ghost btn-sm" style="color:#c0392b;" onclick='deleteRow(${c.id}, ${JSON.stringify(c.name || "")})'>삭제</button>
-      </td>
+      </div></td>
     </tr>
   `).join("");
 }
