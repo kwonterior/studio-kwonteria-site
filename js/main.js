@@ -6,8 +6,36 @@ function imgFallback(el) {
   el.replaceWith(div);
 }
 
+// 새단장 안내 팝업 (세션당 1회, 첫 페이지 진입 시)
+function showRenewalNotice() {
+  if (sessionStorage.getItem("renewalNoticeShown")) return;
+  sessionStorage.setItem("renewalNoticeShown", "1");
+
+  const overlay = document.createElement("div");
+  overlay.className = "rn-overlay";
+  overlay.innerHTML = `
+    <div class="rn-modal" role="dialog" aria-modal="true" aria-labelledby="rn-title">
+      <button class="rn-close" aria-label="닫기">&times;</button>
+      <p class="rn-eyebrow">STUDIO KWONTERIOR</p>
+      <h2 id="rn-title">더 나은 모습으로<br>새단장하고 있습니다</h2>
+      <p class="rn-desc">스튜디오 권테리어가 여러분을 더 잘 보여드리기 위해<br>홈페이지를 새롭게 준비하고 있습니다.<br>궁금하신 점은 전화나 카카오톡으로 편하게 문의해주세요.</p>
+      <button class="btn btn-primary rn-confirm">확인하고 둘러보기</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.querySelector(".rn-close").addEventListener("click", close);
+  overlay.querySelector(".rn-confirm").addEventListener("click", close);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+}
+
 // 모바일 메뉴 토글 + 연락처 자동 채우기 + 상담폼 전송
 document.addEventListener("DOMContentLoaded", () => {
+  showRenewalNotice();
+
   // 전화/카카오 링크 자동 채우기
   document.querySelectorAll("[data-tel]").forEach(el => {
     el.href = "tel:" + COMPANY.phone;

@@ -52,6 +52,33 @@ img{max-width:100%;display:block;}
   .nav-mobile.open{display:flex;}
 }
 
+/* 새단장 안내 팝업 */
+.rn-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(42,39,36,0.55);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+.rn-modal{
+  position:relative;
+  background:var(--bg);
+  border:1px solid var(--line);
+  border-radius:8px;
+  max-width:420px;width:100%;
+  padding:40px 32px 32px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(42,39,36,0.25);
+}
+.rn-close{
+  position:absolute;top:12px;right:14px;
+  background:none;border:none;font-size:22px;line-height:1;
+  color:var(--sub);cursor:pointer;padding:4px;
+}
+.rn-eyebrow{color:var(--accent-dark);font-weight:700;letter-spacing:0.1em;font-size:12px;text-transform:uppercase;margin:0 0 14px;}
+.rn-modal h2{font-size:22px;line-height:1.4;margin:0 0 16px;font-weight:700;}
+.rn-desc{color:var(--sub);font-size:14px;line-height:1.7;margin:0 0 24px;}
+.rn-confirm{width:100%;}
+
 /* 히어로 */
 .hero{
   position:relative;
