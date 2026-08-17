@@ -58,8 +58,12 @@
   </div>
 </header>
 
-<section class="hero">
-  <div class="wrap">
+<section class="hero-full">
+  <div class="hero-media">
+    <span class="ph-badge">대표 시공 사진 준비중</span>
+  </div>
+  <div class="hero-scrim"></div>
+  <div class="wrap hero-copy">
     <div class="eyebrow">경주 · 포항 인테리어</div>
     <h1>삶이 담기는 공간,<br>스튜디오 권테리어가 만듭니다</h1>
     <p>아파트·주택 인테리어를 실측부터 준공까지 대표가 직접 책임지고 관리합니다.</p>
@@ -70,9 +74,21 @@
   </div>
 </section>
 
-<div class="wrap">
-  <div class="ph-image wide">대표 시공 사진 (추후 교체 예정)</div>
-</div>
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Projects</div>
+      <h2>시공 사례</h2>
+      <p>경주·포항에서 진행한 아파트·주택 시공 사례입니다</p>
+    </div>
+    <div class="project-grid" id="home-project-grid">
+      <div class="project-card"><div class="ph-image">불러오는 중...</div></div>
+    </div>
+    <div style="text-align:center;margin-top:32px;">
+      <a href="projects.html" class="btn btn-outline">전체 시공 사례 보기</a>
+    </div>
+  </div>
+</section>
 
 <section>
   <div class="wrap">
@@ -97,22 +113,6 @@
         <h3>실력과 디자인</h3>
         <p>시공 품질은 기본이며, 고객의 생활 패턴에 맞춘 개성 있는 디자인을 제안합니다.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">Projects</div>
-      <h2>시공 사례</h2>
-      <p>경주·포항에서 진행한 아파트·주택 시공 사례입니다</p>
-    </div>
-    <div class="project-grid" id="home-project-grid">
-      <div class="project-card"><div class="ph-image">불러오는 중...</div></div>
-    </div>
-    <div style="text-align:center;margin-top:32px;">
-      <a href="projects.html" class="btn btn-outline">전체 시공 사례 보기</a>
     </div>
   </div>
 </section>
@@ -170,11 +170,16 @@
 
   grid.innerHTML = data.map(p => `
     <div class="project-card">
-      ${p.image_url
-        ? `<img src="${p.image_url}" alt="${p.title}" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;margin-bottom:12px;" onerror="imgFallback(this)">`
-        : `<div class="ph-image">사진 준비중</div>`}
-      <div class="name">${p.title}</div>
-      <div class="tag">${p.category || ""}</div>
+      <div class="project-card-media">
+        ${p.image_url
+          ? `<img src="${p.image_url}" alt="${p.title}" onerror="imgFallback(this)">`
+          : `<div class="ph-image">사진 준비중</div>`}
+      </div>
+      <div class="project-card-body">
+        <div class="name">${p.title}</div>
+        ${p.category ? `<div class="tag">${p.category}</div>` : ""}
+        ${p.description ? `<p class="desc">${p.description}</p>` : ""}
+      </div>
     </div>
   `).join("");
 })();

@@ -32,9 +32,29 @@ function showRenewalNotice() {
   });
 }
 
+// 플로팅 상담 버튼 (전화/카카오톡, 전 페이지 공통)
+// 히어로가 있는 페이지(.hero-full)에서는 히어로를 벗어나야 나타나고, 없는 페이지에서는 바로 보임
+function renderFloatingCta() {
+  const wrap = document.createElement("div");
+  wrap.className = "float-cta";
+  wrap.innerHTML = `
+    <a href="tel:" data-tel class="float-cta-btn float-cta-tel">전화 상담</a>
+    <a href="#" data-kakao target="_blank" class="float-cta-btn float-cta-kakao">카카오톡 상담</a>
+  `;
+  document.body.appendChild(wrap);
+
+  const hero = document.querySelector(".hero-full");
+  if (!hero) { wrap.classList.add("show"); return; }
+  const io = new IntersectionObserver(([entry]) => {
+    wrap.classList.toggle("show", !entry.isIntersecting);
+  }, { threshold: 0.15 });
+  io.observe(hero);
+}
+
 // 모바일 메뉴 토글 + 연락처 자동 채우기 + 상담폼 전송
 document.addEventListener("DOMContentLoaded", () => {
   showRenewalNotice();
+  renderFloatingCta();
 
   // 전화/카카오 링크 자동 채우기
   document.querySelectorAll("[data-tel]").forEach(el => {
