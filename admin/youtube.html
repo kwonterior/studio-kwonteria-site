@@ -18,10 +18,7 @@
       <form id="video-form">
         <input type="hidden" name="id">
         <div class="form-grid cols-4">
-          <div style="grid-column:1/3;"><label>제목 *</label><input type="text" name="title" required placeholder="예: 예쁜데 아쉬운 인테리어 '이 실수' 때문"></div>
-          <div style="grid-column:3/5;"><label>유튜브 링크 *</label><input type="text" name="youtube_url" required placeholder="예: https://www.youtube.com/watch?v=xxxxxxxxxxx"></div>
-        </div>
-        <div class="form-grid" style="margin-top:12px;">
+          <div style="grid-column:1/4;"><label>유튜브 링크 *</label><input type="text" name="youtube_url" required placeholder="예: https://www.youtube.com/watch?v=xxxxxxxxxxx"></div>
           <div><label>정렬 순서</label><input type="number" name="sort_order" value="0" placeholder="숫자가 작을수록 먼저 표시"></div>
         </div>
         <div id="thumb-preview" style="margin-top:10px;"></div>
@@ -37,7 +34,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>썸네일</th><th>제목</th><th>순서</th><th>등록일</th><th></th></tr>
+            <tr><th>썸네일</th><th>링크</th><th>순서</th><th>등록일</th><th></th></tr>
           </thead>
           <tbody id="list-body">
             <tr class="empty-row"><td colspan="5">불러오는 중...</td></tr>
@@ -79,7 +76,7 @@ async function loadList() {
   tbody.innerHTML = data.map(v => `
     <tr>
       <td>${thumbImg(v.youtube_url, 70)}</td>
-      <td>${v.title}</td>
+      <td><a href="${v.youtube_url}" target="_blank" rel="noopener">${v.youtube_url}</a></td>
       <td>${v.sort_order ?? 0}</td>
       <td>${fmtDate(v.created_at)}</td>
       <td><div style="display:flex;gap:6px;">
@@ -93,11 +90,10 @@ async function loadList() {
 function editRow(v) {
   editingId = v.id;
   const form = document.getElementById("video-form");
-  form.title.value = v.title || "";
   form.youtube_url.value = v.youtube_url || "";
   form.sort_order.value = v.sort_order ?? 0;
   document.getElementById("thumb-preview").innerHTML = "현재 썸네일: " + thumbImg(v.youtube_url, 160);
-  document.getElementById("form-title").textContent = v.title + " 수정";
+  document.getElementById("form-title").textContent = "영상 정보 수정";
   document.getElementById("submit-btn").textContent = "수정 저장";
   document.getElementById("cancel-edit").style.display = "inline-flex";
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,7 +132,8 @@ async function deleteRow(id) {
     const form = e.target;
     const submitBtn = document.getElementById("submit-btn");
 
-    if (!extractYoutubeId(form.youtube_url.value)) {
+    const videoId = extractYoutubeId(form.youtube_url.value);
+    if (!videoId) {
       alert("유튜브 링크에서 영상 ID를 찾을 수 없습니다. watch?v=, youtu.be/, shorts/ 형식의 링크를 붙여넣어주세요.");
       return;
     }
@@ -144,7 +141,7 @@ async function deleteRow(id) {
     submitBtn.disabled = true;
 
     const payload = {
-      title: form.title.value,
+      title: videoId, // 썸네일에 이미 제목이 노출되므로 별도 입력은 안 받고, 관리용 식별자로만 저장
       youtube_url: form.youtube_url.value,
       sort_order: Number(form.sort_order.value) || 0
     };

@@ -217,12 +217,11 @@ function extractYoutubeId(url) {
   grid.innerHTML = data.map(v => {
     const id = extractYoutubeId(v.youtube_url);
     const thumbHtml = id
-      ? `<img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="${v.title}">`
+      ? `<img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="스튜디오 권테리어 유튜브 영상">`
       : `<div class="ph-image">영상 준비중</div>`;
     return `
       <a class="video-card" href="${v.youtube_url}" target="_blank" rel="noopener">
         <div class="video-thumb">${thumbHtml}<span class="video-play">▶</span></div>
-        <div class="video-title">${v.title}</div>
       </a>`;
   }).join("");
 

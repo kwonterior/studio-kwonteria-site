@@ -219,7 +219,6 @@ section{padding:64px 0;}
   transition:background 0.2s ease;
 }
 .video-card:hover .video-play{background:var(--accent);}
-.video-title{margin-top:12px;font-weight:600;font-size:15px;}
 
 /* about */
 .about-intro{max-width:680px;margin:0 auto;text-align:center;color:var(--sub);white-space:pre-line;}
