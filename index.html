@@ -90,6 +90,17 @@
   </div>
 </section>
 
+<section id="video-section" style="display:none;">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">YouTube</div>
+      <h2>우리가 공간을 만드는 방법</h2>
+      <p>비하인드 스토리부터 인테리어 꿀팁까지, 유튜브에서 확인해보세요</p>
+    </div>
+    <div class="video-grid" id="home-video-grid"></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <div class="section-head">
@@ -182,6 +193,40 @@
       </div>
     </div>
   `).join("");
+})();
+
+// 유튜브 링크(watch?v=, youtu.be/, shorts/ 형식 모두 지원)에서 영상 ID만 뽑아냄
+function extractYoutubeId(url) {
+  const m = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+(async () => {
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const section = document.getElementById("video-section");
+  const grid = document.getElementById("home-video-grid");
+  const { data, error } = await client
+    .from("youtube_videos")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false })
+    .limit(4);
+
+  if (error || !data || !data.length) return; // 등록된 영상이 없으면 구역 자체를 숨김
+
+  grid.innerHTML = data.map(v => {
+    const id = extractYoutubeId(v.youtube_url);
+    const thumbHtml = id
+      ? `<img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt="${v.title}">`
+      : `<div class="ph-image">영상 준비중</div>`;
+    return `
+      <a class="video-card" href="${v.youtube_url}" target="_blank" rel="noopener">
+        <div class="video-thumb">${thumbHtml}<span class="video-play">▶</span></div>
+        <div class="video-title">${v.title}</div>
+      </a>`;
+  }).join("");
+
+  section.style.display = "";
 })();
 </script>
 </body>

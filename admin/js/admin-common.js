@@ -9,6 +9,7 @@ const MENU = [
   { href: "schedule.html", label: "공정표", ownerOnly: false },
   { href: "customers.html", label: "고객·상담", ownerOnly: false },
   { href: "portfolio.html", label: "포트폴리오", ownerOnly: false },
+  { href: "youtube.html", label: "유튜브 영상", ownerOnly: false },
   { href: "quotes.html", label: "견적서", ownerOnly: false },
   { href: "payments.html", label: "정산·지급", ownerOnly: true },
   { href: "materials.html", label: "자재발주", ownerOnly: false }

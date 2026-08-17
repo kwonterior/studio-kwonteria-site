@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>유튜브 영상 관리 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="youtube.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>유튜브 영상 관리</h1>
+    <p class="sub">여기서 등록한 영상이 홈페이지 "시공 사례" 아래에 그대로 나타납니다 (영상이 하나도 없으면 그 구역 자체가 숨겨집니다)</p>
+
+    <div class="card">
+      <h2 id="form-title">새 영상 등록</h2>
+      <form id="video-form">
+        <input type="hidden" name="id">
+        <div class="form-grid cols-4">
+          <div style="grid-column:1/3;"><label>제목 *</label><input type="text" name="title" required placeholder="예: 예쁜데 아쉬운 인테리어 '이 실수' 때문"></div>
+          <div style="grid-column:3/5;"><label>유튜브 링크 *</label><input type="text" name="youtube_url" required placeholder="예: https://www.youtube.com/watch?v=xxxxxxxxxxx"></div>
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div><label>정렬 순서</label><input type="number" name="sort_order" value="0" placeholder="숫자가 작을수록 먼저 표시"></div>
+        </div>
+        <div id="thumb-preview" style="margin-top:10px;"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit-btn">등록하기</button>
+          <button type="button" class="btn btn-ghost" id="cancel-edit" style="display:none;">취소</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>등록된 영상 (<span id="count">0</span>개)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>썸네일</th><th>제목</th><th>순서</th><th>등록일</th><th></th></tr>
+          </thead>
+          <tbody id="list-body">
+            <tr class="empty-row"><td colspan="5">불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+let editingId = null;
+
+// 유튜브 링크(watch?v=, youtu.be/, shorts/ 형식 모두 지원)에서 영상 ID만 뽑아냄
+function extractYoutubeId(url) {
+  const m = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function youtubeThumb(url) {
+  const id = extractYoutubeId(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+}
+
+function thumbImg(url, size) {
+  const thumb = youtubeThumb(url);
+  return thumb
+    ? `<img src="${thumb}" style="width:${size}px;height:${Math.round(size * 0.5625)}px;object-fit:cover;border-radius:4px;">`
+    : `<span style="color:var(--sub);font-size:12px;">링크 확인 필요</span>`;
+}
+
+async function loadList() {
+  const { data, error } = await sbClient.from("youtube_videos").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false });
+  const tbody = document.getElementById("list-body");
+  document.getElementById("count").textContent = data ? data.length : 0;
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="5">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="5">등록된 영상이 없습니다</td></tr>`; return; }
+  tbody.innerHTML = data.map(v => `
+    <tr>
+      <td>${thumbImg(v.youtube_url, 70)}</td>
+      <td>${v.title}</td>
+      <td>${v.sort_order ?? 0}</td>
+      <td>${fmtDate(v.created_at)}</td>
+      <td><div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(v)})'>수정</button>
+        <button class="btn btn-ghost btn-sm" onclick='deleteRow(${v.id})'>삭제</button>
+      </div></td>
+    </tr>
+  `).join("");
+}
+
+function editRow(v) {
+  editingId = v.id;
+  const form = document.getElementById("video-form");
+  form.title.value = v.title || "";
+  form.youtube_url.value = v.youtube_url || "";
+  form.sort_order.value = v.sort_order ?? 0;
+  document.getElementById("thumb-preview").innerHTML = "현재 썸네일: " + thumbImg(v.youtube_url, 160);
+  document.getElementById("form-title").textContent = v.title + " 수정";
+  document.getElementById("submit-btn").textContent = "수정 저장";
+  document.getElementById("cancel-edit").style.display = "inline-flex";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function resetForm() {
+  editingId = null;
+  document.getElementById("video-form").reset();
+  document.getElementById("thumb-preview").innerHTML = "";
+  document.getElementById("form-title").textContent = "새 영상 등록";
+  document.getElementById("submit-btn").textContent = "등록하기";
+  document.getElementById("cancel-edit").style.display = "none";
+}
+
+async function deleteRow(id) {
+  if (!confirm("이 영상을 삭제하시겠습니까?")) return;
+  const { error } = await sbClient.from("youtube_videos").delete().eq("id", id);
+  if (error) { alert("삭제 실패: " + error.message); return; }
+  loadList();
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  loadList();
+
+  document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+  const urlInput = document.querySelector('input[name="youtube_url"]');
+  urlInput.addEventListener("input", () => {
+    document.getElementById("thumb-preview").innerHTML = urlInput.value ? "미리보기: " + thumbImg(urlInput.value, 160) : "";
+  });
+
+  document.getElementById("video-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = document.getElementById("submit-btn");
+
+    if (!extractYoutubeId(form.youtube_url.value)) {
+      alert("유튜브 링크에서 영상 ID를 찾을 수 없습니다. watch?v=, youtu.be/, shorts/ 형식의 링크를 붙여넣어주세요.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+
+    const payload = {
+      title: form.title.value,
+      youtube_url: form.youtube_url.value,
+      sort_order: Number(form.sort_order.value) || 0
+    };
+
+    let result;
+    if (editingId) {
+      result = await sbClient.from("youtube_videos").update(payload).eq("id", editingId);
+    } else {
+      payload.created_by = auth.user.id;
+      result = await sbClient.from("youtube_videos").insert([payload]);
+    }
+    submitBtn.disabled = false;
+
+    if (result.error) { alert("저장 실패: " + result.error.message); submitBtn.textContent = editingId ? "수정 저장" : "등록하기"; return; }
+    resetForm();
+    loadList();
+  });
+})();
+</script>
+</body>
+</html>
