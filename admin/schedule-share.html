@@ -48,6 +48,9 @@ body{padding:0;}
 let viewYear, viewMonth;
 let customersCache = [];
 
+// 계약 전(문의/상담중/견적중) 고객은 공정표에 아직 노출하지 않음 — 계약이 되어야 현장으로 취급
+const PRE_CONTRACT_STATUSES = ["문의", "상담중", "견적중"];
+
 const SITE_COLORS = ["#4E79A7","#F28E2B","#59A14F","#E15759","#B07AA1","#9C755F","#76B7B2","#D37295","#EDC948","#6B6ECF","#BAB0AC","#B5544A"];
 function colorFor(id){ return SITE_COLORS[id % SITE_COLORS.length]; }
 const DOW_LABELS = ["일","월","화","수","목","금","토"];
@@ -61,7 +64,7 @@ function pad2(n){ return String(n).padStart(2, "0"); }
 function toISO(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 
 async function loadCustomers(){
-  const { data } = await sbClient.from("customers").select("id,name").order("created_at", { ascending:false });
+  const { data } = await sbClient.from("customers").select("id,name,status").order("created_at", { ascending:false });
   customersCache = data || [];
 }
 
@@ -75,7 +78,7 @@ async function render(){
   const items = data || [];
 
   const activeSiteIds = [...new Set(items.filter(it=>it.customer_id).map(it=>it.customer_id))];
-  const sites = customersCache.filter(c=>activeSiteIds.includes(c.id));
+  const sites = customersCache.filter(c=>activeSiteIds.includes(c.id) && !PRE_CONTRACT_STATUSES.includes(c.status));
   const hasIssue = items.some(it=>!it.customer_id);
 
   const itemsByKey = {};
