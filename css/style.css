@@ -161,7 +161,7 @@ img{max-width:100%;display:block;}
 @media (max-width:900px){
   .hero-split{flex-direction:column;min-height:auto;}
   .hero-split--full{min-height:100dvh;}
-  .hero-media-col{flex:none;min-height:auto;height:auto;aspect-ratio:4/3;}
+  .hero-media-col{flex:none;min-height:auto;height:auto;aspect-ratio:4/5;}
   .hero-panel{flex:1 1 auto;min-height:auto;justify-content:space-between;padding:28px 32px;}
   .site-header--overlay .logo img{height:18px;}
   .site-header--overlay .nav-toggle{font-size:20px;}
