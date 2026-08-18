@@ -34,7 +34,7 @@ img{max-width:100%;display:block;}
   height:78px;padding:0 20px;
 }
 .logo{display:flex;align-items:center;}
-.logo img{height:22px;display:block;}
+.logo img{height:18px;display:block;}
 .site-header--overlay{
   position:absolute;top:0;left:0;right:0;z-index:50;
   background:transparent;border-bottom:none;
@@ -157,9 +157,9 @@ img{max-width:100%;display:block;}
 .hero-panel-info a:hover{color:var(--ink);}
 
 @media (max-width:900px){
-  .hero-split{flex-direction:column;min-height:100vh;min-height:100dvh;}
+  .hero-split{flex-direction:column;min-height:auto;}
   .hero-media-col{flex:none;min-height:auto;height:auto;aspect-ratio:4/3;}
-  .hero-panel{flex:1 1 auto;min-height:auto;padding:32px;}
+  .hero-panel{flex:none;min-height:auto;justify-content:flex-start;padding:28px 32px;}
   .site-header--overlay .logo img{height:18px;}
   .site-header--overlay .nav-toggle{font-size:20px;}
 }
@@ -336,6 +336,7 @@ body.page-fit-screen footer{flex:none;}
 
 @media (max-width:600px){
   .about-lead h1{font-size:15px;}
+  body.page-fit-screen .about-lead > .wrap{margin-left:0;max-width:none;}
 }
 
 .info-table{width:100%;border-collapse:collapse;margin-top:8px;}
