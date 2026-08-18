@@ -49,14 +49,7 @@
   </div>
 </header>
 
-<div class="project-filters" id="project-filters">
-  <button data-filter="전체" class="active">전체</button>
-  <button data-filter="아파트">아파트</button>
-  <button data-filter="주택">주택</button>
-  <button data-filter="기타">기타</button>
-</div>
-
-<section style="padding-top:32px;">
+<section style="padding-top:56px;">
   <div class="wrap">
     <div class="project-grid" id="project-grid">
       <div class="project-card"><div class="ph-image">불러오는 중...</div></div>
@@ -103,7 +96,7 @@
   }
 
   grid.innerHTML = data.map(p => `
-    <a class="project-card" href="project-detail.html?id=${p.id}" data-category="${p.category || "기타"}">
+    <a class="project-card" href="project-detail.html?id=${p.id}">
       <div class="project-card-media">
         ${p.image_url
           ? `<img src="${p.image_url}" alt="${p.title}" onerror="imgFallback(this)">`
@@ -115,19 +108,6 @@
       </div>
     </a>
   `).join("");
-
-  const filters = document.getElementById("project-filters");
-  const cards = () => grid.querySelectorAll(".project-card");
-  filters.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => {
-      filters.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const f = btn.dataset.filter;
-      cards().forEach(card => {
-        card.style.display = (f === "전체" || card.dataset.category === f) ? "" : "none";
-      });
-    });
-  });
 })();
 </script>
 </body>
