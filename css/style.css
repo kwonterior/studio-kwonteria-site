@@ -33,8 +33,8 @@ img{max-width:100%;display:block;}
   display:flex;align-items:center;justify-content:space-between;
   height:68px;
 }
-.logo{font-size:18px;font-weight:700;letter-spacing:0.02em;}
-.logo span{color:var(--accent);}
+.logo{display:flex;align-items:center;}
+.logo img{height:44px;display:block;}
 .nav-desktop{display:flex;gap:32px;font-size:15px;}
 .nav-desktop a{padding:6px 0;border-bottom:2px solid transparent;}
 .nav-desktop a.active,.nav-desktop a:hover{border-color:var(--accent);color:var(--accent-dark);}
@@ -108,8 +108,7 @@ img{max-width:100%;display:block;}
 .hero-copy{position:absolute;left:0;right:0;bottom:0;padding-bottom:56px;}
 .hero-copy .eyebrow{color:#f0c9b3;font-weight:600;letter-spacing:0.08em;font-size:13px;text-transform:uppercase;margin-bottom:14px;}
 .hero-copy h1{font-size:40px;line-height:1.35;margin:0 0 16px;font-weight:700;color:#fff;}
-.hero-copy p{color:#ede7de;font-size:16px;max-width:520px;margin:0 0 28px;}
-.hero-copy .hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+.hero-copy p{color:#ede7de;font-size:16px;max-width:520px;margin:0;}
 
 @media (max-width:600px){
   .hero-full{height:min(74vh,560px);min-height:400px;}
