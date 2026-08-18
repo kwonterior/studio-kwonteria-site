@@ -53,8 +53,15 @@
 </header>
 
 <section class="hero-split">
-  <div class="hero-media-col">
-    <img src="assets/hero.jpg" alt="스튜디오 권테리어 시공 사례">
+  <div class="hero-media-col" id="hero-carousel">
+    <img class="hero-slide active" src="assets/hero-1.jpg" alt="스튜디오 권테리어 시공 사례 1">
+    <img class="hero-slide" src="assets/hero-2.jpg" alt="스튜디오 권테리어 시공 사례 2">
+    <button class="hero-arrow hero-arrow-prev" aria-label="이전 사진">‹</button>
+    <button class="hero-arrow hero-arrow-next" aria-label="다음 사진">›</button>
+    <div class="hero-dots">
+      <span class="hero-dot active" data-i="0"></span>
+      <span class="hero-dot" data-i="1"></span>
+    </div>
   </div>
   <div class="hero-panel">
     <div class="hero-panel-videos" id="home-video-grid"></div>
@@ -71,6 +78,25 @@
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script>
+// 히어로 좌측 사진 캐러셀 (사진이 늘어나도 그대로 동작)
+(function () {
+  const root = document.getElementById("hero-carousel");
+  if (!root) return;
+  const slides = root.querySelectorAll(".hero-slide");
+  const dots = root.querySelectorAll(".hero-dot");
+  if (slides.length < 2) return;
+  let i = 0;
+  function show(n) {
+    i = (n + slides.length) % slides.length;
+    slides.forEach((s, idx) => s.classList.toggle("active", idx === i));
+    dots.forEach((d, idx) => d.classList.toggle("active", idx === i));
+  }
+  root.querySelector(".hero-arrow-prev").addEventListener("click", () => show(i - 1));
+  root.querySelector(".hero-arrow-next").addEventListener("click", () => show(i + 1));
+  dots.forEach((d, idx) => d.addEventListener("click", () => show(idx)));
+  setInterval(() => show(i + 1), 6000);
+})();
+
 // 유튜브 링크(watch?v=, youtu.be/, shorts/ 형식 모두 지원)에서 영상 ID만 뽑아냄
 function extractYoutubeId(url) {
   const m = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
