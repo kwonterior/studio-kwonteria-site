@@ -35,6 +35,17 @@ img{max-width:100%;display:block;}
 }
 .logo{display:flex;align-items:center;}
 .logo img{height:42px;display:block;}
+.site-header--overlay{
+  position:absolute;top:0;left:0;right:0;z-index:50;
+  background:transparent;border-bottom:none;
+}
+.site-header--overlay::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:150px;
+  background:linear-gradient(180deg,rgba(20,17,14,0.45) 0%,rgba(20,17,14,0) 100%);
+  pointer-events:none;z-index:-1;
+}
+.site-header--overlay .logo{filter:drop-shadow(0 1px 4px rgba(0,0,0,0.4));}
+.site-header--overlay .nav-toggle{color:#fff;}
 .nav-toggle{
   display:flex;align-items:center;justify-content:center;
   width:34px;height:34px;background:none;border:none;cursor:pointer;
@@ -102,6 +113,7 @@ img{max-width:100%;display:block;}
 
 /* 히어로 (홈페이지, 좌우 분할형) */
 .hero-split{display:flex;min-height:calc(100vh - 78px);padding:0;}
+.hero-split--full{min-height:100vh;}
 .hero-media-col{
   position:relative;flex:1 1 50%;min-height:64vh;overflow:hidden;
 }
