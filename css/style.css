@@ -62,12 +62,12 @@ img{max-width:100%;display:block;}
 }
 .nav-mobile.open{display:block;}
 .nav-mobile a{
-  display:block;padding:8px 0;font-size:12.5px;font-weight:400;color:var(--sub);
-  white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.3);
+  display:block;padding:8px 0;font-size:12.5px;font-weight:600;color:var(--ink);
+  white-space:nowrap;text-shadow:0 1px 6px rgba(255,255,255,0.5);
 }
-.nav-mobile a::before{content:"+ ";color:var(--sub);}
-.nav-mobile a.active,.nav-mobile a:hover{color:var(--ink);}
-.nav-mobile a.active::before,.nav-mobile a:hover::before{color:var(--ink);}
+.nav-mobile a::before{content:"+ ";color:var(--ink);}
+.nav-mobile a.active,.nav-mobile a:hover{color:var(--accent-dark);}
+.nav-mobile a.active::before,.nav-mobile a:hover::before{color:var(--accent-dark);}
 
 /* 새단장 안내 팝업 */
 .rn-overlay{
