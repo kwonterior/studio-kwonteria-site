@@ -57,6 +57,7 @@
     <span class="ph-badge">대표 시공 사진 준비중</span>
   </div>
   <div class="hero-panel">
+    <div class="hero-panel-videos" id="home-video-grid"></div>
     <div class="hero-panel-info">
       <h1>스튜디오 권테리어</h1>
       <div data-address-text></div>
@@ -66,126 +67,10 @@
   </div>
 </section>
 
-<section>
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">Projects</div>
-      <h2>시공 사례</h2>
-      <p>경주·포항에서 진행한 아파트·주택 시공 사례입니다</p>
-    </div>
-    <div class="project-grid" id="home-project-grid">
-      <div class="project-card"><div class="ph-image">불러오는 중...</div></div>
-    </div>
-    <div style="text-align:center;margin-top:32px;">
-      <a href="projects.html" class="btn btn-outline">전체 시공 사례 보기</a>
-    </div>
-  </div>
-</section>
-
-<section id="video-section" style="display:none;">
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">YouTube</div>
-      <h2>우리가 공간을 만드는 방법</h2>
-      <p>비하인드 스토리부터 인테리어 꿀팁까지, 유튜브에서 확인해보세요</p>
-    </div>
-    <div class="video-grid" id="home-video-grid"></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="section-head">
-      <div class="eyebrow">Philosophy</div>
-      <h2>우리가 일하는 방식</h2>
-      <p>단순히 예쁜 공간이 아니라, 삶이 달라지는 공간을 만듭니다</p>
-    </div>
-    <div class="pillars">
-      <div class="pillar">
-        <div class="num">01</div>
-        <h3>선한 영향력</h3>
-        <p>공간을 통해 고객의 삶과 마음에 긍정적인 변화를 주는 것을 최고의 보람으로 생각합니다.</p>
-      </div>
-      <div class="pillar">
-        <div class="num">02</div>
-        <h3>합리적 가치</h3>
-        <p>불필요한 비용은 줄이고, 필요한 곳에 정직하게 투자하여 낸 금액 이상의 만족을 드립니다.</p>
-      </div>
-      <div class="pillar">
-        <div class="num">03</div>
-        <h3>실력과 디자인</h3>
-        <p>시공 품질은 기본이며, 고객의 생활 패턴에 맞춘 개성 있는 디자인을 제안합니다.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="trust-strip">
-  <div class="wrap">
-    <div class="stat"><b>경주 · 포항</b><span>지역 전문 시공</span></div>
-    <div class="stat"><b>월 평균 3건</b><span>대표 직접 관리</span></div>
-    <div class="stat"><b data-biz-text></b><span>사업자등록번호</span></div>
-  </div>
-</div>
-
-<section style="text-align:center;">
-  <div class="wrap">
-    <h2 style="margin-bottom:20px;">지금 상담을 신청해보세요</h2>
-    <a href="contact.html" class="btn btn-primary">상담 신청하기</a>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <div class="foot-top">
-      <div>
-        <div style="font-weight:700;margin-bottom:6px;">스튜디오 권테리어</div>
-        <div data-address-text></div>
-        <div>사업자등록번호 <span data-biz-text></span></div>
-      </div>
-      <div class="foot-links">
-        <a href="tel:" data-tel>전화 상담</a>
-        <a href="#" data-kakao target="_blank">카카오톡 상담</a>
-      </div>
-    </div>
-    <div>© 2026 스튜디오 권테리어. All rights reserved.</div>
-  </div>
-</footer>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script>
-(async () => {
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const grid = document.getElementById("home-project-grid");
-  const { data, error } = await client
-    .from("projects")
-    .select("*")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false })
-    .limit(3);
-
-  if (error || !data || !data.length) {
-    grid.innerHTML = '<div class="project-card"><div class="ph-image">아직 등록된 시공 사례가 없습니다</div></div>';
-    return;
-  }
-
-  grid.innerHTML = data.map(p => `
-    <div class="project-card">
-      <div class="project-card-media">
-        ${p.image_url
-          ? `<img src="${p.image_url}" alt="${p.title}" onerror="imgFallback(this)">`
-          : `<div class="ph-image">사진 준비중</div>`}
-        <div class="project-card-overlay">
-          <div class="name">${p.title}</div>
-          ${p.category ? `<div class="tag">${p.category}</div>` : ""}
-        </div>
-      </div>
-    </div>
-  `).join("");
-})();
-
 // 유튜브 링크(watch?v=, youtu.be/, shorts/ 형식 모두 지원)에서 영상 ID만 뽑아냄
 function extractYoutubeId(url) {
   const m = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -194,16 +79,15 @@ function extractYoutubeId(url) {
 
 (async () => {
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  const section = document.getElementById("video-section");
   const grid = document.getElementById("home-video-grid");
   const { data, error } = await client
     .from("youtube_videos")
     .select("*")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false })
-    .limit(4);
+    .limit(2);
 
-  if (error || !data || !data.length) return; // 등록된 영상이 없으면 구역 자체를 숨김
+  if (error || !data || !data.length) { grid.style.display = "none"; return; } // 등록된 영상이 없으면 자리 자체가 안 생김
 
   grid.innerHTML = data.map(v => {
     const id = extractYoutubeId(v.youtube_url);
@@ -215,8 +99,6 @@ function extractYoutubeId(url) {
         <div class="video-thumb">${thumbHtml}<span class="video-play">▶</span></div>
       </a>`;
   }).join("");
-
-  section.style.display = "";
 })();
 </script>
 </body>
