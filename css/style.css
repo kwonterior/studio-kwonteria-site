@@ -313,25 +313,34 @@ section{padding:80px 0;}
 
 /* about */
 .about-lead{padding:96px 0 8px;}
-.about-lead h1{font-size:26px;font-weight:600;line-height:1.55;max-width:640px;margin:0 0 44px;}
-.about-lines{max-width:580px;color:var(--sub);font-size:14.5px;line-height:2.1;}
+.about-split{display:flex;align-items:stretch;height:100%;}
+.about-text-col{flex:1 1 50%;display:flex;flex-direction:column;justify-content:center;padding:0 56px;}
+.about-text-col h1{font-size:26px;font-weight:600;line-height:1.55;max-width:520px;margin:0 0 40px;}
+.about-lines{max-width:480px;color:var(--sub);font-size:14.5px;line-height:2.1;}
 .about-lines p{margin:0 0 26px;}
 .about-lines p:last-child{margin-bottom:0;}
 .about-lines .strong{color:var(--ink);}
+.about-video-col{flex:1 1 50%;position:relative;overflow:hidden;background:var(--card);}
+.about-video-col img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;}
+.about-video-col:hover img{transform:scale(1.03);}
+.about-video-col:hover .video-play{background:var(--ink);}
 
 /* 스크롤 없이 한 화면에 들어가야 하는 페이지 (지금은 about.html) */
 body.page-fit-screen{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
 body.page-fit-screen .site-header{flex:none;}
-body.page-fit-screen .about-lead{
-  flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;
-  padding:32px 0;min-height:0;
-}
+body.page-fit-screen .about-lead{flex:1 1 auto;padding:0;min-height:0;}
 body.page-fit-screen footer{flex:none;}
 
 @media (max-height:700px){
-  body.page-fit-screen .about-lead h1{font-size:21px;margin-bottom:24px;}
+  body.page-fit-screen .about-text-col h1{font-size:21px;margin-bottom:24px;}
   body.page-fit-screen .about-lines{font-size:13px;line-height:1.7;}
   body.page-fit-screen .about-lines p{margin-bottom:14px;}
+}
+
+@media (max-width:900px){
+  .about-split{flex-direction:column;}
+  .about-text-col{padding:40px 24px;}
+  .about-video-col{height:38vh;flex:none;}
 }
 
 .info-table{width:100%;border-collapse:collapse;margin-top:8px;}
