@@ -45,7 +45,7 @@ img{max-width:100%;display:block;}
   pointer-events:none;z-index:-1;
 }
 .site-header--overlay .wrap{padding:0 20px;}
-.site-header--overlay .logo img{height:26px;}
+.site-header--overlay .logo img{height:22px;}
 .site-header--overlay .nav-toggle{color:#fff;}
 .nav-toggle{
   display:flex;align-items:center;justify-content:center;
@@ -111,9 +111,9 @@ img{max-width:100%;display:block;}
 
 /* 히어로 (홈페이지, 좌우 분할형) */
 .hero-split{display:flex;min-height:calc(100vh - 78px);padding:0;}
-.hero-split--full{min-height:100vh;}
+.hero-split--full{min-height:92vh;}
 .hero-media-col{
-  position:relative;flex:1 1 50%;min-height:64vh;overflow:hidden;
+  position:relative;flex:1 1 56%;min-height:64vh;overflow:hidden;
 }
 .hero-media-col img,.hero-media-col .ph-image{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
@@ -146,7 +146,7 @@ img{max-width:100%;display:block;}
 }
 .hero-dot.active{background:#fff;transform:scale(1.2);}
 .hero-panel{
-  flex:1 1 50%;min-height:64vh;
+  flex:1 1 44%;min-height:64vh;
   display:flex;flex-direction:column;justify-content:flex-end;
   padding:40px 56px;
 }
@@ -163,7 +163,7 @@ img{max-width:100%;display:block;}
   .hero-media-col,.hero-panel{flex:none;min-height:auto;}
   .hero-media-col{height:auto;aspect-ratio:4/3;}
   .hero-panel{padding:32px;min-height:auto;}
-  .site-header--overlay .logo img{height:22px;}
+  .site-header--overlay .logo img{height:18px;}
   .site-header--overlay .nav-toggle{font-size:20px;}
 }
 
