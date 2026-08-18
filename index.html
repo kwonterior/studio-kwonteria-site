@@ -85,7 +85,7 @@ function extractYoutubeId(url) {
     .select("*")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false })
-    .limit(2);
+    .limit(4);
 
   if (error || !data || !data.length) { grid.style.display = "none"; return; } // 등록된 영상이 없으면 자리 자체가 안 생김
 
