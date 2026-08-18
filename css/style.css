@@ -65,7 +65,7 @@ img{max-width:100%;display:block;}
 }
 .nav-mobile.open{display:block;}
 .nav-mobile a{
-  display:block;padding:11px 0;font-size:15px;color:var(--sub);
+  display:block;padding:8px 0;font-size:12.5px;font-weight:400;color:var(--sub);
   white-space:nowrap;
 }
 .nav-mobile a::before{content:"+ ";color:var(--sub);}
