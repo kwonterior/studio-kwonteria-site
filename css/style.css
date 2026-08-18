@@ -34,7 +34,7 @@ img{max-width:100%;display:block;}
   height:78px;
 }
 .logo{display:flex;align-items:center;}
-.logo img{height:36px;display:block;}
+.logo img{height:42px;display:block;}
 .nav-toggle{
   display:flex;align-items:center;justify-content:center;
   width:34px;height:34px;background:none;border:none;cursor:pointer;
