@@ -33,7 +33,7 @@ function showRenewalNotice() {
 }
 
 // 플로팅 상담 버튼 (전화/카카오톡, 전 페이지 공통)
-// 히어로가 있는 페이지(.hero-full)에서는 히어로를 벗어나야 나타나고, 없는 페이지에서는 바로 보임
+// 히어로가 있는 페이지(.hero-split)에서는 히어로를 벗어나야 나타나고, 없는 페이지에서는 바로 보임
 function renderFloatingCta() {
   const wrap = document.createElement("div");
   wrap.className = "float-cta";
@@ -43,7 +43,7 @@ function renderFloatingCta() {
   `;
   document.body.appendChild(wrap);
 
-  const hero = document.querySelector(".hero-full");
+  const hero = document.querySelector(".hero-split");
   if (!hero) { wrap.classList.add("show"); return; }
   const io = new IntersectionObserver(([entry]) => {
     wrap.classList.toggle("show", !entry.isIntersecting);
@@ -78,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileNav = document.querySelector(".nav-mobile");
   if (toggle && mobileNav) {
     toggle.addEventListener("click", () => {
+      toggle.classList.toggle("open");
       mobileNav.classList.toggle("open");
     });
   }

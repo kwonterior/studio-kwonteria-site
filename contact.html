@@ -14,6 +14,7 @@
 <meta property="og:description" content="스튜디오 권테리어 상담 신청 - 경주·포항 아파트·주택 인테리어 문의">
 <meta property="og:url" content="https://www.kwonterior.com/contact.html">
 <meta name="twitter:card" content="summary">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="css/style.css">
 <script type="application/ld+json">
 {
@@ -39,20 +40,13 @@
 <header class="site-header">
   <div class="wrap">
     <a href="index.html" class="logo"><img src="assets/logo.png" alt="스튜디오 권테리어"></a>
-    <nav class="nav-desktop">
-      <a href="index.html">HOME</a>
-      <a href="about.html">ABOUT</a>
-      <a href="projects.html">PROJECTS</a>
-      <a href="contact.html" class="active">CONTACT</a>
-    </nav>
-    <a href="contact.html" class="nav-cta desktop-only">상담 신청</a>
-    <button class="nav-toggle" aria-label="메뉴 열기">☰</button>
+    <button class="nav-toggle" aria-label="메뉴 열기">+</button>
   </div>
   <div class="nav-mobile">
     <a href="index.html">HOME</a>
     <a href="about.html">ABOUT</a>
     <a href="projects.html">PROJECTS</a>
-    <a href="contact.html">CONTACT</a>
+    <a href="contact.html" class="active">CONTACT</a>
   </div>
 </header>
 
@@ -99,19 +93,17 @@
           <label>연락처 *</label>
           <input type="tel" name="phone" placeholder="010-0000-0000" required>
         </div>
-        <div class="row two-col">
-          <div>
-            <label>지역</label>
-            <select name="region">
-              <option value="경주">경주</option>
-              <option value="포항">포항</option>
-              <option value="기타">기타</option>
-            </select>
-          </div>
-          <div>
-            <label>평수</label>
-            <input type="text" name="area" placeholder="예: 30평">
-          </div>
+        <div class="row">
+          <label>지역</label>
+          <select name="region">
+            <option value="경주">경주</option>
+            <option value="포항">포항</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>평수</label>
+          <input type="text" name="area" placeholder="예: 30평">
         </div>
         <div class="row">
           <label>예상 예산</label>
