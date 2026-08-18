@@ -101,7 +101,7 @@ img{max-width:100%;display:block;}
 }
 
 /* 히어로 (홈페이지, 좌우 분할형) */
-.hero-split{display:flex;min-height:calc(100vh - 78px);}
+.hero-split{display:flex;min-height:calc(100vh - 78px);padding:0;}
 .hero-media-col{
   position:relative;flex:1 1 50%;min-height:64vh;overflow:hidden;
 }
