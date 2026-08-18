@@ -251,8 +251,9 @@ section{padding:80px 0;}
   display:flex;flex-direction:column;justify-content:flex-end;
   padding:16px;color:#fff;
 }
-.project-card:hover .project-card-overlay{opacity:1;}
-.project-card-overlay .name{font-size:13.5px;font-weight:600;}
+.project-card:hover .project-card-overlay,
+.project-card.show-caption .project-card-overlay{opacity:1;}
+.project-card-overlay .name{font-size:12px;font-weight:600;}
 
 @media (max-width:900px){
   .project-grid{grid-template-columns:repeat(2,1fr);}

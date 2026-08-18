@@ -84,6 +84,41 @@
 (async () => {
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const grid = document.getElementById("project-grid");
+
+  // 모바일: 꾹 누르면(long press) 데스크톱 호버처럼 현장명 노출, 짧은 탭은 그대로 상세페이지로 이동
+  let pressTimer = null, longPressed = false, startX = 0, startY = 0, activeCard = null;
+  grid.addEventListener("touchstart", (e) => {
+    const card = e.target.closest(".project-card");
+    if (!card) return;
+    activeCard = card;
+    longPressed = false;
+    const t = e.touches[0];
+    startX = t.clientX; startY = t.clientY;
+    pressTimer = setTimeout(() => {
+      longPressed = true;
+      card.classList.add("show-caption");
+    }, 350);
+  }, { passive: true });
+  grid.addEventListener("touchmove", (e) => {
+    if (!activeCard) return;
+    const t = e.touches[0];
+    if (Math.abs(t.clientX - startX) > 10 || Math.abs(t.clientY - startY) > 10) clearTimeout(pressTimer);
+  }, { passive: true });
+  grid.addEventListener("touchend", (e) => {
+    clearTimeout(pressTimer);
+    if (longPressed && activeCard) {
+      e.preventDefault();
+      const card = activeCard;
+      setTimeout(() => card.classList.remove("show-caption"), 1400);
+    }
+    activeCard = null;
+  });
+  grid.addEventListener("touchcancel", () => {
+    clearTimeout(pressTimer);
+    if (activeCard) activeCard.classList.remove("show-caption");
+    activeCard = null;
+  });
+
   const { data, error } = await client
     .from("projects")
     .select("*")
