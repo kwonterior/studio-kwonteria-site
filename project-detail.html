@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>시공 사례 | 스튜디오 권테리어</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo"><img src="assets/logo-mark.png" alt="스튜디오 권테리어"></a>
+    <button class="nav-toggle" aria-label="메뉴 열기">+</button>
+  </div>
+  <div class="nav-mobile">
+    <a href="about.html">ABOUT</a>
+    <a href="projects.html" class="active">PROJECTS</a>
+    <a href="contact.html">CONTACT</a>
+  </div>
+</header>
+
+<div id="detail-root">
+  <div class="wrap" style="padding:80px 32px;text-align:center;color:var(--sub);">불러오는 중...</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script>
+(async () => {
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const root = document.getElementById("detail-root");
+  const id = new URLSearchParams(location.search).get("id");
+
+  if (!id) {
+    root.innerHTML = '<div class="wrap" style="padding:80px 32px;text-align:center;color:var(--sub);">잘못된 접근입니다. <a href="projects.html" style="text-decoration:underline;">시공 사례 목록으로</a></div>';
+    return;
+  }
+
+  const [{ data: project, error }, { data: photos }] = await Promise.all([
+    client.from("projects").select("*").eq("id", id).single(),
+    client.from("project_photos").select("*").eq("project_id", id).order("sort_order", { ascending: true })
+  ]);
+
+  if (error || !project) {
+    root.innerHTML = '<div class="wrap" style="padding:80px 32px;text-align:center;color:var(--sub);">등록된 시공 사례를 찾을 수 없습니다. <a href="projects.html" style="text-decoration:underline;">시공 사례 목록으로</a></div>';
+    return;
+  }
+
+  document.title = `${project.title} | 스튜디오 권테리어`;
+
+  const images = [];
+  if (project.image_url) images.push(project.image_url);
+  (photos || []).forEach(p => { if (p.image_url) images.push(p.image_url); });
+
+  const galleryHtml = images.length
+    ? images.map(url => `<img src="${url}" alt="${project.title}" onerror="imgFallback(this)">`).join("")
+    : `<div class="ph-image wide">사진 준비중</div>`;
+
+  const metaRow = (label, value) => value
+    ? `<div class="detail-meta-row"><div class="label">${label}</div><div class="value">${value}</div></div>`
+    : "";
+
+  root.innerHTML = `
+    <div class="detail-split">
+      <div class="detail-gallery">${galleryHtml}</div>
+      <div class="detail-panel">
+        <a href="projects.html" class="detail-back">← 전체 시공 사례</a>
+        <h1 class="detail-title">${project.title}</h1>
+        ${metaRow("Type", project.category)}
+        ${metaRow("Location", project.location)}
+        ${metaRow("Floor Area", project.floor_area)}
+        ${metaRow("Director", project.director)}
+        ${metaRow("Design", project.designer)}
+        ${project.description ? `<div class="detail-meta-row"><div class="label">Story</div><div class="value">${project.description}</div></div>` : ""}
+        <a href="contact.html" class="detail-contact-link">CONTACT →</a>
+      </div>
+    </div>
+  `;
+})();
+</script>
+</body>
+</html>

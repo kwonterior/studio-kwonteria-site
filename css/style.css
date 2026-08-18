@@ -247,7 +247,7 @@ section{padding:80px 0;}
 
 /* 프로젝트 그리드 */
 .project-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
-.project-card{position:relative;}
+.project-card{position:relative;display:block;}
 .project-card-media{position:relative;overflow:hidden;}
 .project-card-media img,.project-card-media .ph-image{
   width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:0;margin:0;
@@ -288,6 +288,28 @@ section{padding:80px 0;}
   transition:background 0.2s ease;
 }
 .video-card:hover .video-play{background:var(--ink);}
+
+/* 프로젝트 상세페이지 (디오브 스타일: 좌측 세로 갤러리 스크롤 + 우측 고정 메타정보) */
+.detail-split{display:flex;align-items:flex-start;}
+.detail-gallery{flex:1 1 60%;display:flex;flex-direction:column;gap:2px;}
+.detail-gallery img{width:100%;display:block;}
+.detail-panel{
+  flex:1 1 40%;position:sticky;top:79px;align-self:flex-start;
+  padding:48px 40px;height:calc(100vh - 79px);overflow-y:auto;
+}
+.detail-back{display:inline-block;margin-bottom:36px;color:var(--sub);font-size:13px;}
+.detail-back:hover{color:var(--ink);}
+.detail-title{font-size:20px;font-weight:600;margin:0 0 28px;}
+.detail-meta-row{padding:16px 0;border-bottom:1px solid var(--line);}
+.detail-meta-row .label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--sub);margin-bottom:6px;}
+.detail-meta-row .value{font-size:14.5px;}
+.detail-contact-link{display:inline-flex;align-items:center;gap:6px;margin-top:32px;font-size:14px;font-weight:600;}
+.detail-contact-link:hover{color:var(--accent-dark);}
+
+@media (max-width:900px){
+  .detail-split{flex-direction:column;}
+  .detail-panel{position:static;height:auto;padding:32px 20px;}
+}
 
 /* about */
 .about-lead{padding:96px 0 8px;}
