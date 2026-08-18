@@ -72,6 +72,18 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-biz-text]").forEach(el => {
     el.textContent = COMPANY.bizNumber;
   });
+  document.querySelectorAll("[data-email-text]").forEach(el => {
+    el.textContent = COMPANY.email;
+  });
+  document.querySelectorAll("[data-phone-intl-text]").forEach(el => {
+    el.textContent = COMPANY.phoneIntl;
+  });
+  document.querySelectorAll("[data-name-en-text]").forEach(el => {
+    el.textContent = COMPANY.nameEn;
+  });
+  document.querySelectorAll("[data-address-en-text]").forEach(el => {
+    el.textContent = COMPANY.addressEn;
+  });
 
   // 모바일 메뉴
   const toggle = document.querySelector(".nav-toggle");

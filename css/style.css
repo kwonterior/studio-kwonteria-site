@@ -120,8 +120,8 @@ img{max-width:100%;display:block;}
   padding:40px 56px;
 }
 .hero-panel-videos{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
-  width:100%;max-width:360px;margin-bottom:32px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
+  width:100%;max-width:560px;margin-bottom:36px;
 }
 .hero-panel-info{color:var(--sub);font-size:13.5px;line-height:1.9;}
 .hero-panel-info h1{font-size:15px;font-weight:700;color:var(--ink);margin:0 0 10px;letter-spacing:0.01em;}
