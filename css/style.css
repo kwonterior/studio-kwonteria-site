@@ -317,6 +317,13 @@ section{padding:80px 0;}
 .about-lines p{margin:0 0 26px;}
 .about-lines p:last-child{margin-bottom:0;}
 .about-lines .strong{color:var(--ink);}
+.about-lead-row{display:flex;align-items:center;gap:64px;}
+.about-lead-text{flex:0 1 560px;}
+.about-lead-photo{flex:1 1 auto;min-width:0;align-self:stretch;}
+.about-lead-photo img{width:100%;height:100%;max-height:60vh;object-fit:cover;display:block;}
+@media (max-width:900px){
+  .about-lead-photo{display:none;}
+}
 
 /* 스크롤 없이 한 화면에 들어가야 하는 페이지 (지금은 about.html) */
 body.page-fit-screen{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;}
