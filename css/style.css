@@ -326,7 +326,7 @@ section{padding:80px 0;}
      화면 높이에 관계없이 스크롤 없는 레이아웃을 유지 (about-lead의 flex 높이를 그대로 상속) */
   .about-lead-row{flex-direction:column;gap:16px;height:100%;}
   .about-lead-text{flex:none;}
-  .about-lead-photo{flex:1 1 0;min-height:56px;width:100%;align-self:auto;}
+  .about-lead-photo{flex:1 1 0;min-height:90px;width:100%;align-self:auto;}
   .about-lead-photo img{max-height:none;}
 }
 
@@ -339,6 +339,10 @@ body.page-fit-screen .about-lead{
 }
 body.page-fit-screen .about-lead > .wrap{width:100%;}
 body.page-fit-screen footer{flex:none;}
+
+@media (max-width:900px){
+  body.page-fit-screen footer{padding:20px 0;}
+}
 
 @media (max-height:760px), (max-width:900px){
   body.page-fit-screen .about-lead{padding:16px 0;}
