@@ -57,16 +57,13 @@ img{max-width:100%;display:block;}
 .nav-mobile{
   display:none;
   position:fixed;top:78px;right:0;z-index:99;
-  background:var(--bg);
-  border-left:1px solid var(--line);
-  border-bottom:1px solid var(--line);
   padding:8px 40px 28px;
   text-align:right;
 }
 .nav-mobile.open{display:block;}
 .nav-mobile a{
   display:block;padding:8px 0;font-size:12.5px;font-weight:400;color:var(--sub);
-  white-space:nowrap;
+  white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.3);
 }
 .nav-mobile a::before{content:"+ ";color:var(--sub);}
 .nav-mobile a.active,.nav-mobile a:hover{color:var(--ink);}
