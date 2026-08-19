@@ -113,7 +113,7 @@ img{max-width:100%;display:block;}
 .hero-split{display:flex;min-height:calc(100vh - 78px);padding:0;}
 .hero-split--full{min-height:100vh;}
 .hero-media-col{
-  position:relative;flex:1 1 56%;min-height:64vh;overflow:hidden;
+  position:relative;flex:1 1 38%;min-height:64vh;overflow:hidden;
 }
 .hero-media-col img,.hero-media-col .ph-image{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
@@ -146,7 +146,7 @@ img{max-width:100%;display:block;}
 }
 .hero-dot.active{background:#fff;transform:scale(1.2);}
 .hero-panel{
-  flex:1 1 44%;min-height:64vh;
+  flex:1 1 62%;min-height:64vh;
   display:flex;flex-direction:column;justify-content:flex-end;
   padding:40px 56px;
 }
