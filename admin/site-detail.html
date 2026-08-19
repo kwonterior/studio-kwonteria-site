@@ -166,7 +166,7 @@ async function loadHead() {
   const { data: quotes } = await sbClient.from("quotes").select("*").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(1);
   const q = quotes && quotes[0];
   const fields = [
-    ["연락처", c.phone], ["지역", c.region],
+    ["연락처", c.phone], ["주소", c.address], ["지역", c.region],
     ["평수", c.area_pyeong], ["예산", c.budget], ["유입경로", c.source]
   ].filter(([, v]) => v);
 

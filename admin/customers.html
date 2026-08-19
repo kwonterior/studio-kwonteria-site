@@ -20,6 +20,7 @@
         <div class="form-grid">
           <div><label>이름 *</label><input type="text" name="name" required></div>
           <div><label>연락처</label><input type="text" name="phone"></div>
+          <div style="grid-column:1/-1;"><label>주소</label><input type="text" name="address" placeholder="시공 주소"></div>
           <div><label>지역</label>
             <select name="region">
               <option value="경주">경주</option>
@@ -78,10 +79,10 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>등록일</th><th>이름</th><th>연락처</th><th>지역</th><th>평수</th><th>예산</th><th>상태</th><th>경로</th><th></th></tr>
+            <tr><th>등록일</th><th>이름</th><th>연락처</th><th>주소</th><th>지역</th><th>평수</th><th>예산</th><th>상태</th><th>경로</th><th></th></tr>
           </thead>
           <tbody id="list-body">
-            <tr class="empty-row"><td colspan="9">불러오는 중...</td></tr>
+            <tr class="empty-row"><td colspan="10">불러오는 중...</td></tr>
           </tbody>
         </table>
       </div>
@@ -97,13 +98,14 @@ let editingId = null;
 async function loadList() {
   const { data, error } = await sbClient.from("customers").select("*").order("created_at", { ascending: false });
   const tbody = document.getElementById("list-body");
-  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="9">불러오기 실패: ${error.message}</td></tr>`; return; }
-  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="9">등록된 고객이 없습니다</td></tr>`; return; }
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="10">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="10">등록된 고객이 없습니다</td></tr>`; return; }
   tbody.innerHTML = data.map(c => `
     <tr>
       <td>${fmtDate(c.created_at)}</td>
       <td><a href="site-detail.html?id=${c.id}" style="color:var(--accent-dark);font-weight:600;">${c.name || "-"}</a></td>
       <td>${c.phone || "-"}</td>
+      <td>${c.address || "-"}</td>
       <td>${c.region || "-"}</td>
       <td>${c.area_pyeong || "-"}</td>
       <td>${c.budget || "-"}</td>
@@ -129,6 +131,7 @@ function editRow(c) {
   const form = document.getElementById("customer-form");
   form.name.value = c.name || "";
   form.phone.value = c.phone || "";
+  form.address.value = c.address || "";
   form.region.value = c.region || "경주";
   form.area_pyeong.value = c.area_pyeong || "";
   form.budget.value = c.budget || "";
@@ -162,6 +165,7 @@ function resetForm() {
     const payload = {
       name: form.name.value,
       phone: form.phone.value,
+      address: form.address.value,
       region: form.region.value,
       area_pyeong: form.area_pyeong.value,
       budget: form.budget.value,
