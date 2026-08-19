@@ -144,9 +144,9 @@
         </div>
       </a>
       <a class="promo-card" href="about.html">
-        <div class="promo-media"><img src="assets/hero-6.jpg" alt="회사 소개" onerror="imgFallback(this)"></div>
+        <div class="promo-media"><img src="assets/about-photo.jpg" alt="회사 소개" onerror="imgFallback(this)"></div>
         <div class="promo-text">
-          <p>우리 집에 꼭 맞는<br>권테리어의 철학을 알아보세요.</p>
+          <p>권테리어가 궁금하다면<br>우리의 철학을 살펴보세요.</p>
           <span class="btn btn-outline btn-pill">회사 소개 보기 ›</span>
         </div>
       </a>
@@ -182,6 +182,21 @@
     opt.textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
     sel.appendChild(opt);
   }
+})();
+
+// 연락처 형식 검사 (숫자만 9~11자리, 0으로 시작해야 유효한 번호로 인정)
+(() => {
+  const phoneInput = document.querySelector('#inquiry-form input[name="phone"]');
+  function validatePhone() {
+    const digits = phoneInput.value.replace(/\D/g, "");
+    if (!digits || digits.length < 9 || digits.length > 11 || digits[0] !== "0") {
+      phoneInput.setCustomValidity("올바른 연락처를 입력해주세요. 예: 010-1234-5678");
+    } else {
+      phoneInput.setCustomValidity("");
+    }
+  }
+  phoneInput.addEventListener("input", validatePhone);
+  phoneInput.addEventListener("blur", validatePhone);
 })();
 
 // 주소 검색 (다음 우편번호 서비스)
