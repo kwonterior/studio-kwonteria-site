@@ -353,7 +353,6 @@ body.page-fit-screen footer{flex:none;}
 .contact-media iframe{width:100%;height:100%;border:0;display:block;position:absolute;inset:0;}
 .contact-form-col{flex:1 1 66%;padding:0;}
 .contact-form-col .inner{max-width:480px;}
-.contact-form-col > .inner > p{color:var(--sub);font-size:14px;line-height:1.6;margin:0 0 4px;}
 @media (max-width:900px){
   .contact-split{flex-direction:column;gap:32px;padding-top:32px;padding-bottom:0;}
   .contact-media{flex:none;min-height:0;aspect-ratio:4/3;}

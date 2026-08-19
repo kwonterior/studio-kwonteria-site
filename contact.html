@@ -56,8 +56,6 @@
   </div>
   <div class="contact-form-col">
     <div class="inner">
-      <p>공간에 대한 고민을 편하게 남겨주세요.<br>확인 후 빠르게 연락드리겠습니다.</p>
-
       <form class="inquiry" id="inquiry-form">
         <div class="row">
           <label>이름 <span class="req">*</span></label>
@@ -92,13 +90,8 @@
         </div>
         <div class="row row-select">
           <label>예상 공사 시기 <span class="req">*</span></label>
-          <select name="timing" required>
+          <select name="timing" id="timing-select" required>
             <option value="" disabled selected>선택하세요.</option>
-            <option>즉시 가능</option>
-            <option>1개월 이내</option>
-            <option>1~3개월 이내</option>
-            <option>3개월 이상</option>
-            <option>미정</option>
           </select>
         </div>
         <div class="row row-select">
@@ -149,6 +142,18 @@
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script>
+// 예상 공사 시기: 다음달부터 1년치(12개월)를 항상 오늘 날짜 기준으로 채움
+(() => {
+  const sel = document.getElementById("timing-select");
+  const now = new Date();
+  for (let i = 1; i <= 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const opt = document.createElement("option");
+    opt.textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+    sel.appendChild(opt);
+  }
+})();
+
 // 주소 검색 (다음 우편번호 서비스)
 document.getElementById("address-search-btn").addEventListener("click", openAddressSearch);
 document.getElementById("address-input").addEventListener("click", openAddressSearch);
