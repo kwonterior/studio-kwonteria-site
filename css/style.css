@@ -390,8 +390,27 @@ form.inquiry .row-select::after{
 .consent-all{font-weight:700;color:var(--ink);font-size:14.5px;padding-bottom:10px;border-bottom:1px solid var(--line);}
 .consent-item a{text-decoration:underline;color:var(--sub);}
 .consent-item a:hover{color:var(--ink);}
-#form-success{
-  display:none;background:transparent;border:1px solid var(--line);padding:32px;text-align:center;
+.btn-pill{border-radius:999px;padding:11px 22px;font-size:13px;white-space:nowrap;}
+
+.success-head{display:flex;gap:64px;padding:64px 0 40px;}
+.success-left,.success-right{flex:1 1 0;}
+.success-left h1{font-size:30px;font-weight:700;margin:0 0 16px;}
+.success-left p{color:var(--sub);font-size:15px;line-height:1.7;margin:0;}
+.success-right h2{font-size:15px;font-weight:700;margin:0 0 14px;}
+.success-field{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);}
+.success-field .k{flex:0 0 80px;color:var(--sub);font-size:13.5px;}
+.success-field .v{font-size:15px;font-weight:500;}
+
+.success-promo{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:16px 0 56px;}
+.promo-card{display:block;}
+.promo-media{aspect-ratio:16/10;overflow:hidden;margin-bottom:16px;}
+.promo-media img{width:100%;height:100%;object-fit:cover;display:block;margin:0;border-radius:0;}
+.promo-text{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;}
+.promo-text p{margin:0;font-size:15px;font-weight:600;line-height:1.5;}
+
+@media (max-width:700px){
+  .success-head{flex-direction:column;gap:32px;padding:40px 0 24px;}
+  .success-promo{grid-template-columns:1fr;gap:36px;}
 }
 
 /* 푸터 */

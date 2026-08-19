@@ -49,7 +49,7 @@
   </div>
 </header>
 
-<section>
+<section id="contact-form-section">
   <div class="wrap contact-split">
   <div class="contact-media">
     <iframe data-map-embed title="스튜디오 권테리어 위치" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -115,12 +115,42 @@
 
         <button type="submit" class="btn btn-primary btn-block">상담 신청하기</button>
       </form>
-      <div id="form-success">
-        <h3 style="margin-top:0;">상담 신청이 접수되었습니다</h3>
-        <p style="color:var(--sub);">빠른 시간 내에 연락드리겠습니다. 급하신 경우 전화나 카카오톡으로 문의해주세요.</p>
-      </div>
     </div>
   </div>
+  </div>
+</section>
+
+<section id="form-success" style="display:none;">
+  <div class="wrap">
+    <div class="success-head">
+      <div class="success-left">
+        <h1>상담 신청 완료</h1>
+        <p>신청해주셔서 감사합니다.<br>확인 후 빠르게 연락드리겠습니다.</p>
+      </div>
+      <div class="success-right">
+        <h2>신청 내용</h2>
+        <div class="success-field"><span class="k">이름</span><span class="v" id="success-name"></span></div>
+        <div class="success-field"><span class="k">연락처</span><span class="v" id="success-phone"></span></div>
+        <div class="success-field"><span class="k">주소</span><span class="v" id="success-address"></span></div>
+        <div class="success-field"><span class="k">최대 예산</span><span class="v" id="success-budget"></span></div>
+      </div>
+    </div>
+    <div class="success-promo">
+      <a class="promo-card" href="projects.html">
+        <div class="promo-media"><img src="assets/hero-3.jpg" alt="시공 사례" onerror="imgFallback(this)"></div>
+        <div class="promo-text">
+          <p>방문 상담 전에<br>다양한 시공 사례를 살펴보세요.</p>
+          <span class="btn btn-outline btn-pill">포트폴리오 보기 ›</span>
+        </div>
+      </a>
+      <a class="promo-card" href="about.html">
+        <div class="promo-media"><img src="assets/hero-6.jpg" alt="회사 소개" onerror="imgFallback(this)"></div>
+        <div class="promo-text">
+          <p>우리 집에 꼭 맞는<br>권테리어의 철학을 알아보세요.</p>
+          <span class="btn btn-outline btn-pill">회사 소개 보기 ›</span>
+        </div>
+      </a>
+    </div>
   </div>
 </section>
 

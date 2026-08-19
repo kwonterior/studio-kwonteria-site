@@ -135,8 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      form.style.display = "none";
+      document.getElementById("success-name").textContent = payload.name;
+      document.getElementById("success-phone").textContent = payload.phone;
+      document.getElementById("success-address").textContent = payload.address || "-";
+      document.getElementById("success-budget").textContent = payload.budget || "-";
+
+      document.getElementById("contact-form-section").style.display = "none";
       document.getElementById("form-success").style.display = "block";
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
 });
