@@ -64,21 +64,16 @@
     <img class="hero-slide" src="assets/hero-9.jpg" alt="스튜디오 권테리어 시공 사례 9">
     <img class="hero-slide" src="assets/hero-10.jpg" alt="스튜디오 권테리어 시공 사례 10">
     <img class="hero-slide" src="assets/hero-11.jpg" alt="스튜디오 권테리어 시공 사례 11">
+    <img class="hero-slide" src="assets/hero-12.jpg" alt="스튜디오 권테리어 시공 사례 12">
+    <img class="hero-slide" src="assets/hero-13.jpg" alt="스튜디오 권테리어 시공 사례 13">
+    <img class="hero-slide" src="assets/hero-14.jpg" alt="스튜디오 권테리어 시공 사례 14">
+    <img class="hero-slide" src="assets/hero-15.jpg" alt="스튜디오 권테리어 시공 사례 15">
+    <img class="hero-slide" src="assets/hero-16.jpg" alt="스튜디오 권테리어 시공 사례 16">
+    <img class="hero-slide" src="assets/hero-17.jpg" alt="스튜디오 권테리어 시공 사례 17">
+    <img class="hero-slide" src="assets/hero-18.jpg" alt="스튜디오 권테리어 시공 사례 18">
     <button class="hero-arrow hero-arrow-prev" aria-label="이전 사진">‹</button>
     <button class="hero-arrow hero-arrow-next" aria-label="다음 사진">›</button>
-    <div class="hero-dots">
-      <span class="hero-dot active" data-i="0"></span>
-      <span class="hero-dot" data-i="1"></span>
-      <span class="hero-dot" data-i="2"></span>
-      <span class="hero-dot" data-i="3"></span>
-      <span class="hero-dot" data-i="4"></span>
-      <span class="hero-dot" data-i="5"></span>
-      <span class="hero-dot" data-i="6"></span>
-      <span class="hero-dot" data-i="7"></span>
-      <span class="hero-dot" data-i="8"></span>
-      <span class="hero-dot" data-i="9"></span>
-      <span class="hero-dot" data-i="10"></span>
-    </div>
+    <div class="hero-dots"></div>
   </div>
   <div class="hero-panel">
     <div class="hero-panel-videos" id="home-video-grid"></div>
@@ -100,8 +95,10 @@
   const root = document.getElementById("hero-carousel");
   if (!root) return;
   const slides = root.querySelectorAll(".hero-slide");
-  const dots = root.querySelectorAll(".hero-dot");
   if (slides.length < 2) return;
+  const dotsWrap = root.querySelector(".hero-dots");
+  dotsWrap.innerHTML = Array.from(slides).map((_, idx) => `<span class="hero-dot${idx === 0 ? " active" : ""}" data-i="${idx}"></span>`).join("");
+  const dots = root.querySelectorAll(".hero-dot");
   let i = 0;
   function show(n) {
     i = (n + slides.length) % slides.length;
