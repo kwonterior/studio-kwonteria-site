@@ -49,87 +49,83 @@
   </div>
 </header>
 
-<section class="contact-hero-photo">
-  <img src="assets/hero-3.jpg" alt="스튜디오 권테리어 상담" onerror="imgFallback(this)">
-</section>
-
-<section class="contact-hero-heading">
-  <div class="wrap wrap-narrow">
-    <h1>전문가의<br>1:1 인테리어 상담</h1>
-    <p>공간에 대한 고민을 편하게 남겨주세요.<br>확인 후 빠르게 연락드리겠습니다.</p>
+<section class="contact-split">
+  <div class="contact-media">
+    <img src="assets/contact-consult.jpg" alt="자재와 샘플을 두고 상담하는 스튜디오 권테리어" onerror="imgFallback(this)">
   </div>
-</section>
+  <div class="contact-form-col">
+    <div class="inner">
+      <h1>전문가의<br>1:1 인테리어 상담</h1>
+      <p>공간에 대한 고민을 편하게 남겨주세요.<br>확인 후 빠르게 연락드리겠습니다.</p>
 
-<section style="padding-top:0;">
-  <div class="wrap wrap-narrow">
-    <form class="inquiry" id="inquiry-form">
-      <div class="row">
-        <label>이름 <span class="req">*</span></label>
-        <input type="text" name="name" placeholder="성함을 입력해주세요." required>
-      </div>
-      <div class="row">
-        <label>연락처 <span class="req">*</span></label>
-        <input type="tel" name="phone" placeholder="상담이 가능한 연락처를 알려주세요." required>
-      </div>
-      <div class="row">
-        <label>주소 <span class="req">*</span></label>
-        <div class="addr-field">
-          <input type="text" id="address-input" placeholder="시공하려는 주소를 알려주세요." readonly required>
-          <button type="button" id="address-search-btn">검색</button>
+      <form class="inquiry" id="inquiry-form">
+        <div class="row">
+          <label>이름 <span class="req">*</span></label>
+          <input type="text" name="name" placeholder="성함을 입력해주세요." required>
         </div>
-      </div>
-      <div class="row">
-        <label></label>
-        <input type="text" id="address-detail-input" placeholder="상세주소를 입력해주세요.">
-      </div>
-      <div class="row row-select">
-        <label>최대 예산 <span class="req">*</span></label>
-        <select name="budget" required>
-          <option value="" disabled selected>선택하세요.</option>
-          <option>3천만원 이하</option>
-          <option>3천~5천만원</option>
-          <option>5천~8천만원</option>
-          <option>8천만원~1억</option>
-          <option>1억 이상</option>
-          <option>상담 후 결정</option>
-        </select>
-      </div>
-      <div class="row row-select">
-        <label>시공 희망 지역</label>
-        <select name="region">
-          <option value="" disabled selected>선택하세요.</option>
-          <option value="경주">경주</option>
-          <option value="포항">포항</option>
-          <option value="기타">기타</option>
-        </select>
-      </div>
-      <div class="row row-select">
-        <label>예상 공사 시기</label>
-        <select name="timing">
-          <option value="" disabled selected>선택하세요.</option>
-          <option>즉시 가능</option>
-          <option>1개월 이내</option>
-          <option>1~3개월 이내</option>
-          <option>3개월 이상</option>
-          <option>미정</option>
-        </select>
-      </div>
-      <div class="row">
-        <label>문의 내용</label>
-        <textarea name="memo" placeholder="궁금하신 점을 남겨주세요."></textarea>
-      </div>
+        <div class="row">
+          <label>연락처 <span class="req">*</span></label>
+          <input type="tel" name="phone" placeholder="상담이 가능한 연락처를 알려주세요." required>
+        </div>
+        <div class="row">
+          <label>주소 <span class="req">*</span></label>
+          <div class="addr-field">
+            <input type="text" id="address-input" placeholder="시공하려는 주소를 알려주세요." readonly required>
+            <button type="button" id="address-search-btn">검색</button>
+          </div>
+        </div>
+        <div class="row">
+          <label></label>
+          <input type="text" id="address-detail-input" placeholder="상세주소를 입력해주세요.">
+        </div>
+        <div class="row row-select">
+          <label>최대 예산 <span class="req">*</span></label>
+          <select name="budget" required>
+            <option value="" disabled selected>선택하세요.</option>
+            <option>3천만원 이하</option>
+            <option>3천~5천만원</option>
+            <option>5천~8천만원</option>
+            <option>8천만원~1억</option>
+            <option>1억 이상</option>
+            <option>상담 후 결정</option>
+          </select>
+        </div>
+        <div class="row row-select">
+          <label>예상 공사 시기 <span class="req">*</span></label>
+          <select name="timing" required>
+            <option value="" disabled selected>선택하세요.</option>
+            <option>즉시 가능</option>
+            <option>1개월 이내</option>
+            <option>1~3개월 이내</option>
+            <option>3개월 이상</option>
+            <option>미정</option>
+          </select>
+        </div>
+        <div class="row row-select">
+          <label>상담 희망 직영점</label>
+          <select name="region">
+            <option value="" disabled selected>선택하세요.</option>
+            <option value="경주 스튜디오">경주 스튜디오</option>
+            <option value="포항 라이브러리(준비중)">포항 라이브러리 (준비중)</option>
+          </select>
+        </div>
+        <div class="row">
+          <label>문의 내용</label>
+          <textarea name="memo" placeholder="궁금하신 점을 남겨주세요."></textarea>
+        </div>
 
-      <div class="consent-block">
-        <label class="consent-all"><input type="checkbox" id="consent-all"> 약관에 모두 동의합니다</label>
-        <label class="consent-item"><input type="checkbox" name="consent_required" class="consent-check" required> 상담을 위한 <a href="#" data-modal="privacy">개인정보 수집과 이용</a> 동의 (필수)</label>
-        <label class="consent-item"><input type="checkbox" name="consent_marketing" class="consent-check"> 맞춤형 서비스 제안과 혜택 안내를 위한 <a href="#" data-modal="marketing">마케팅 정보 활용 및 수신</a> 동의 (선택)</label>
-      </div>
+        <div class="consent-block">
+          <label class="consent-all"><input type="checkbox" id="consent-all"> 약관에 모두 동의합니다</label>
+          <label class="consent-item"><input type="checkbox" name="consent_required" class="consent-check" required> 상담을 위한 <a href="#" data-modal="privacy">개인정보 수집과 이용</a> 동의 (필수)</label>
+          <label class="consent-item"><input type="checkbox" name="consent_marketing" class="consent-check"> 맞춤형 서비스 제안과 혜택 안내를 위한 <a href="#" data-modal="marketing">마케팅 정보 활용 및 수신</a> 동의 (선택)</label>
+        </div>
 
-      <button type="submit" class="btn btn-primary btn-block">상담 신청하기</button>
-    </form>
-    <div id="form-success">
-      <h3 style="margin-top:0;">상담 신청이 접수되었습니다</h3>
-      <p style="color:var(--sub);">빠른 시간 내에 연락드리겠습니다. 급하신 경우 전화나 카카오톡으로 문의해주세요.</p>
+        <button type="submit" class="btn btn-primary btn-block">상담 신청하기</button>
+      </form>
+      <div id="form-success">
+        <h3 style="margin-top:0;">상담 신청이 접수되었습니다</h3>
+        <p style="color:var(--sub);">빠른 시간 내에 연락드리겠습니다. 급하신 경우 전화나 카카오톡으로 문의해주세요.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -148,7 +144,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.js"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script>
