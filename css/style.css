@@ -348,17 +348,16 @@ body.page-fit-screen footer{flex:none;}
 .info-table th{width:140px;color:var(--sub);}
 
 /* contact */
-.contact-split{display:flex;align-items:stretch;}
-.contact-media{flex:1 1 26%;position:relative;overflow:hidden;}
-.contact-media img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;}
-.contact-form-col{flex:1 1 74%;padding:48px 56px;}
+.contact-split{display:flex;align-items:stretch;gap:64px;padding-top:56px;padding-bottom:56px;}
+.contact-media{flex:1 1 34%;position:relative;overflow:hidden;min-height:520px;background:var(--card);}
+.contact-media iframe{width:100%;height:100%;border:0;display:block;position:absolute;inset:0;}
+.contact-form-col{flex:1 1 66%;padding:0;}
 .contact-form-col .inner{max-width:480px;}
 .contact-form-col > .inner > p{color:var(--sub);font-size:14px;line-height:1.6;margin:0 0 4px;}
 @media (max-width:900px){
-  .contact-split{flex-direction:column;}
+  .contact-split{flex-direction:column;gap:32px;padding-top:32px;padding-bottom:0;}
   .contact-media{flex:none;min-height:0;aspect-ratio:4/3;}
-  .contact-media img{position:static;}
-  .contact-form-col{padding:32px 20px;}
+  .contact-form-col{padding:0 0 32px;}
 }
 
 form.inquiry .row{

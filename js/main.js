@@ -84,6 +84,9 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-address-en-text]").forEach(el => {
     el.textContent = COMPANY.addressEn;
   });
+  document.querySelectorAll("[data-map-embed]").forEach(el => {
+    el.src = "https://www.google.com/maps?q=" + encodeURIComponent(COMPANY.address) + "&output=embed";
+  });
 
   // 모바일 메뉴
   const toggle = document.querySelector(".nav-toggle");
