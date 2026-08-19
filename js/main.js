@@ -85,7 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
     el.textContent = COMPANY.addressEn;
   });
   document.querySelectorAll("[data-map-embed]").forEach(el => {
-    el.src = "https://www.google.com/maps?q=" + encodeURIComponent(COMPANY.address) + "&output=embed";
+    // 주소만 넣으면 지도에 핀이 안 뜨는 경우가 있어 등록된 구글 비즈니스 프로필 이름으로 검색
+    el.src = "https://www.google.com/maps?q=" + encodeURIComponent(COMPANY.name + " " + COMPANY.address) + "&output=embed";
   });
 
   // 모바일 메뉴
