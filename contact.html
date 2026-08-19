@@ -49,75 +49,87 @@
   </div>
 </header>
 
-<section class="hero" style="padding-bottom:20px;">
-  <div class="wrap">
-    <div class="eyebrow">Contact</div>
-    <h1>상담 신청</h1>
-    <p>편하신 방법으로 문의해주세요. 빠르게 연락드리겠습니다.</p>
+<section class="contact-hero-photo">
+  <img src="assets/hero-3.jpg" alt="스튜디오 권테리어 상담" onerror="imgFallback(this)">
+</section>
+
+<section class="contact-hero-heading">
+  <div class="wrap wrap-narrow">
+    <h1>전문가의<br>1:1 인테리어 상담</h1>
+    <p>공간에 대한 고민을 편하게 남겨주세요.<br>확인 후 빠르게 연락드리겠습니다.</p>
   </div>
 </section>
 
 <section style="padding-top:0;">
-  <div class="wrap contact-grid">
-    <div class="contact-info">
-      <div class="item">
-        <div class="label">전화</div>
-        <div class="value"><a href="tel:" data-tel>📞 <span data-phone-text></span></a></div>
+  <div class="wrap wrap-narrow">
+    <form class="inquiry" id="inquiry-form">
+      <div class="row">
+        <label>이름 <span class="req">*</span></label>
+        <input type="text" name="name" placeholder="성함을 입력해주세요." required>
       </div>
-      <div class="item">
-        <div class="label">카카오톡</div>
-        <div class="value"><a href="#" data-kakao target="_blank">💬 카카오톡 채널로 상담하기</a></div>
+      <div class="row">
+        <label>연락처 <span class="req">*</span></label>
+        <input type="tel" name="phone" placeholder="상담이 가능한 연락처를 알려주세요." required>
       </div>
-      <div class="item">
-        <div class="label">주소</div>
-        <div class="value" data-address-text></div>
+      <div class="row">
+        <label>주소 <span class="req">*</span></label>
+        <div class="addr-field">
+          <input type="text" id="address-input" placeholder="시공하려는 주소를 알려주세요." readonly required>
+          <button type="button" id="address-search-btn">검색</button>
+        </div>
       </div>
-      <div class="item">
-        <div class="label">영업시간</div>
-        <div class="value">평일 09:00 - 18:00</div>
+      <div class="row">
+        <label></label>
+        <input type="text" id="address-detail-input" placeholder="상세주소를 입력해주세요.">
       </div>
-      <div class="item">
-        <div class="label">시공 지역</div>
-        <div class="value">경주 · 포항</div>
+      <div class="row row-select">
+        <label>최대 예산 <span class="req">*</span></label>
+        <select name="budget" required>
+          <option value="" disabled selected>선택하세요.</option>
+          <option>3천만원 이하</option>
+          <option>3천~5천만원</option>
+          <option>5천~8천만원</option>
+          <option>8천만원~1억</option>
+          <option>1억 이상</option>
+          <option>상담 후 결정</option>
+        </select>
       </div>
-    </div>
+      <div class="row row-select">
+        <label>시공 희망 지역</label>
+        <select name="region">
+          <option value="" disabled selected>선택하세요.</option>
+          <option value="경주">경주</option>
+          <option value="포항">포항</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="row row-select">
+        <label>예상 공사 시기</label>
+        <select name="timing">
+          <option value="" disabled selected>선택하세요.</option>
+          <option>즉시 가능</option>
+          <option>1개월 이내</option>
+          <option>1~3개월 이내</option>
+          <option>3개월 이상</option>
+          <option>미정</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>문의 내용</label>
+        <textarea name="memo" placeholder="궁금하신 점을 남겨주세요."></textarea>
+      </div>
 
-    <div>
-      <form class="inquiry" id="inquiry-form">
-        <div class="row">
-          <label>성함 *</label>
-          <input type="text" name="name" required>
-        </div>
-        <div class="row">
-          <label>연락처 *</label>
-          <input type="tel" name="phone" placeholder="010-0000-0000" required>
-        </div>
-        <div class="row">
-          <label>지역</label>
-          <select name="region">
-            <option value="경주">경주</option>
-            <option value="포항">포항</option>
-            <option value="기타">기타</option>
-          </select>
-        </div>
-        <div class="row">
-          <label>평수</label>
-          <input type="text" name="area" placeholder="예: 30평">
-        </div>
-        <div class="row">
-          <label>예상 예산</label>
-          <input type="text" name="budget" placeholder="예: 5000만원">
-        </div>
-        <div class="row">
-          <label>문의 내용</label>
-          <textarea name="memo" placeholder="공사 예정 시기, 궁금하신 점 등을 남겨주세요"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">상담 신청하기</button>
-      </form>
-      <div id="form-success">
-        <h3 style="margin-top:0;">상담 신청이 접수되었습니다</h3>
-        <p style="color:var(--sub);">빠른 시간 내에 연락드리겠습니다. 급하신 경우 전화나 카카오톡으로 문의해주세요.</p>
+      <div class="consent-block">
+        <label class="consent-all"><input type="checkbox" id="consent-all"> 약관에 모두 동의합니다</label>
+        <label class="consent-item"><input type="checkbox" name="consent_required" class="consent-check" required> 상담을 위한 <a href="#" data-modal="privacy">개인정보 수집과 이용</a> 동의 (필수)</label>
+        <label class="consent-item"><input type="checkbox" name="consent_marketing" class="consent-check"> 맞춤형 서비스 제안과 혜택 안내를 위한 <a href="#" data-modal="marketing">마케팅 정보 활용 및 수신</a> 동의 (선택)</label>
       </div>
+
+      <button type="submit" class="btn btn-primary btn-block">상담 신청하기</button>
+    </form>
+    <div id="form-success">
+      <h3 style="margin-top:0;">상담 신청이 접수되었습니다</h3>
+      <p style="color:var(--sub);">빠른 시간 내에 연락드리겠습니다. 급하신 경우 전화나 카카오톡으로 문의해주세요.</p>
     </div>
   </div>
 </section>
@@ -136,7 +148,63 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.js"></script>
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
+<script>
+// 주소 검색 (다음 우편번호 서비스)
+document.getElementById("address-search-btn").addEventListener("click", openAddressSearch);
+document.getElementById("address-input").addEventListener("click", openAddressSearch);
+function openAddressSearch() {
+  new daum.Postcode({
+    oncomplete: (data) => {
+      document.getElementById("address-input").value = data.roadAddress || data.jibunAddress;
+      document.getElementById("address-detail-input").focus();
+    }
+  }).open();
+}
+
+// "약관에 모두 동의합니다" <-> 개별 체크박스 동기화
+const consentAll = document.getElementById("consent-all");
+const consentChecks = document.querySelectorAll(".consent-check");
+consentAll.addEventListener("change", () => {
+  consentChecks.forEach(c => { c.checked = consentAll.checked; });
+});
+consentChecks.forEach(c => c.addEventListener("change", () => {
+  consentAll.checked = Array.from(consentChecks).every(c => c.checked);
+}));
+
+// 개인정보 수집/마케팅 동의 안내 (간단 팝업, 새단장 안내와 동일한 방식 재사용)
+const modalContent = {
+  privacy: {
+    title: "개인정보 수집과 이용 동의",
+    body: "상담 신청을 위해 이름, 연락처, 주소를 수집하며, 상담 목적 외에는 사용하지 않습니다.<br>상담 완료 후 관련 법령에 따른 보관 기간이 지나면 파기합니다."
+  },
+  marketing: {
+    title: "마케팅 정보 활용 및 수신 동의",
+    body: "동의하시면 시공 사례, 이벤트 등 안내를 위해 연락드릴 수 있습니다.<br>선택 항목이며, 동의하지 않으셔도 상담 신청에는 제한이 없습니다."
+  }
+};
+document.querySelectorAll("[data-modal]").forEach(link => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const info = modalContent[link.dataset.modal];
+    const overlay = document.createElement("div");
+    overlay.className = "rn-overlay";
+    overlay.innerHTML = `
+      <div class="rn-modal" role="dialog" aria-modal="true">
+        <button class="rn-close" aria-label="닫기">&times;</button>
+        <h2 style="font-size:18px;">${info.title}</h2>
+        <p class="rn-desc" style="text-align:left;">${info.body}</p>
+        <button class="btn btn-primary rn-confirm">확인</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.querySelector(".rn-close").addEventListener("click", close);
+    overlay.querySelector(".rn-confirm").addEventListener("click", close);
+    overlay.addEventListener("click", (ev) => { if (ev.target === overlay) close(); });
+  });
+});
+</script>
 </body>
 </html>

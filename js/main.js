@@ -105,13 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.disabled = true;
       btn.textContent = "전송 중...";
 
+      const addressInput = document.getElementById("address-input");
+      const addressDetailInput = document.getElementById("address-detail-input");
+      const address = addressInput ? [addressInput.value, addressDetailInput.value].filter(Boolean).join(" ") : "";
+      const timing = form.timing ? form.timing.value : "";
+
       const payload = {
         name: form.name.value,
         phone: form.phone.value,
+        address: address,
         region: form.region.value,
-        area_pyeong: form.area.value,
         budget: form.budget.value,
-        memo: form.memo.value,
+        memo: (timing ? `[예상 공사 시기: ${timing}]\n` : "") + form.memo.value,
         source: "홈페이지",
         status: "문의"
       };
