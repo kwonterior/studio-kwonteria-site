@@ -385,7 +385,7 @@ form.inquiry .row-select::after{
 }
 
 .consent-block{padding:16px 0 8px;display:flex;flex-direction:column;gap:10px;}
-.consent-block label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13.5px;line-height:1.6;color:var(--sub);}
+.consent-block label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13.5px;line-height:1.6;color:var(--sub);word-break:keep-all;}
 .consent-block input{margin-top:2px;flex:none;}
 .consent-all{font-weight:700;color:var(--ink);font-size:14.5px;padding-bottom:10px;border-bottom:1px solid var(--line);}
 .consent-item a{text-decoration:underline;color:var(--sub);white-space:nowrap;}
