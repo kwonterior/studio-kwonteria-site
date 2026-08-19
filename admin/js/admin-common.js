@@ -70,3 +70,10 @@ function fmtMoney(n) {
   if (n === null || n === undefined || n === "") return "-";
   return Number(n).toLocaleString("ko-KR") + "원";
 }
+function fmtPhone(raw) {
+  if (!raw) return "-";
+  const digits = String(raw).replace(/\D/g, "");
+  if (digits.length === 11) return digits.replace(/(\d{3})(\d{4})(\d{4})/, "$1 $2 $3");
+  if (digits.length === 10) return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1 $2 $3");
+  return raw;
+}

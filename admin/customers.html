@@ -21,11 +21,10 @@
           <div><label>이름 *</label><input type="text" name="name" required></div>
           <div><label>연락처</label><input type="text" name="phone"></div>
           <div style="grid-column:1/-1;"><label>주소</label><input type="text" name="address" placeholder="시공 주소"></div>
-          <div><label>지역</label>
+          <div><label>상담 희망 직영점</label>
             <select name="region">
-              <option value="경주">경주</option>
-              <option value="포항">포항</option>
-              <option value="기타">기타</option>
+              <option value="경주 스튜디오">경주 스튜디오</option>
+              <option value="포항 라이브러리(준비중)">포항 라이브러리 (준비중)</option>
             </select>
           </div>
           <div><label>평수</label>
@@ -38,7 +37,16 @@
               <option value="기타">기타</option>
             </select>
           </div>
-          <div><label>예산</label><input type="text" name="budget" placeholder="예: 5000만원"></div>
+          <div><label>최대 예산</label>
+            <select name="budget">
+              <option value="3천만원 이하">3천만원 이하</option>
+              <option value="3천~5천만원">3천~5천만원</option>
+              <option value="5천~8천만원">5천~8천만원</option>
+              <option value="8천만원~1억">8천만원~1억</option>
+              <option value="1억 이상">1억 이상</option>
+              <option value="상담 후 결정">상담 후 결정</option>
+            </select>
+          </div>
           <div><label>유입경로</label>
             <select name="source">
               <option value="블로그">블로그</option>
@@ -104,7 +112,7 @@ async function loadList() {
     <tr>
       <td>${fmtDate(c.created_at)}</td>
       <td><a href="site-detail.html?id=${c.id}" style="color:var(--accent-dark);font-weight:600;">${c.name || "-"}</a></td>
-      <td>${c.phone || "-"}</td>
+      <td>${fmtPhone(c.phone)}</td>
       <td>${c.address || "-"}</td>
       <td>${c.region || "-"}</td>
       <td>${c.area_pyeong || "-"}</td>
@@ -132,7 +140,7 @@ function editRow(c) {
   form.name.value = c.name || "";
   form.phone.value = c.phone || "";
   form.address.value = c.address || "";
-  form.region.value = c.region || "경주";
+  form.region.value = c.region || "경주 스튜디오";
   form.area_pyeong.value = c.area_pyeong || "";
   form.budget.value = c.budget || "";
   form.source.value = c.source || "기타";

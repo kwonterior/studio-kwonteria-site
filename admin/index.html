@@ -65,7 +65,7 @@
     <tr>
       <td>${fmtDate(c.created_at)}</td>
       <td>${c.name || "-"}</td>
-      <td>${c.phone || "-"}</td>
+      <td>${fmtPhone(c.phone)}</td>
       <td>${c.region || "-"}</td>
       <td><span class="badge status-${c.status}">${c.status || "-"}</span></td>
       <td>${c.source || "-"}</td>
