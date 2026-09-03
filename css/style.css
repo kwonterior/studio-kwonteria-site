@@ -69,7 +69,7 @@ img{max-width:100%;display:block;}
 .nav-mobile a.active,.nav-mobile a:hover{color:var(--accent-dark);}
 .nav-mobile a.active::before,.nav-mobile a:hover::before{color:var(--accent-dark);}
 
-/* 새단장 안내 팝업 */
+/* 간단 안내 팝업 (약관 안내 모달 등에서 재사용) */
 .rn-overlay{
   position:fixed;inset:0;z-index:1000;
   background:rgba(32,29,26,0.55);
@@ -90,7 +90,6 @@ img{max-width:100%;display:block;}
   background:none;border:none;font-size:22px;line-height:1;
   color:var(--sub);cursor:pointer;padding:4px;
 }
-.rn-eyebrow{color:var(--sub);font-weight:600;letter-spacing:0.12em;font-size:12px;text-transform:uppercase;margin:0 0 14px;}
 .rn-modal h2{font-size:22px;line-height:1.4;margin:0 0 16px;font-weight:600;}
 .rn-desc{color:var(--sub);font-size:14px;line-height:1.7;margin:0 0 24px;}
 .rn-confirm{width:100%;}
