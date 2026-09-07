@@ -8,7 +8,7 @@ const MENU = [
   { href: "index.html", label: "대시보드", ownerOnly: false },
   { href: "customers.html", label: "견적문의", ownerOnly: false },
   { href: "portfolio.html", label: "포트폴리오", ownerOnly: false },
-  { href: "youtube.html", label: "유튜브 영상", ownerOnly: false }
+  { href: "youtube.html", label: "유튜브", ownerOnly: false }
 ];
 // 공정표/견적서/정산·지급/자재발주 메뉴는 당분간 미사용으로 숨김(2026-09-07) — 페이지 자체는 그대로 남아있음, 필요해지면 위 배열에 다시 추가할 것
 // { href: "schedule.html", label: "공정표", ownerOnly: false },
