@@ -87,10 +87,28 @@
 <script src="js/config.js"></script>
 <script src="js/main.js"></script>
 <script>
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // 히어로 좌측 사진 캐러셀 (사진이 늘어나도 그대로 동작)
-(function () {
+// admin/hero.html에서 등록한 사진이 있으면 그걸로 교체, 하나도 없으면 기본 사진을 그대로 씀
+(async function () {
   const root = document.getElementById("hero-carousel");
   if (!root) return;
+
+  try {
+    const { data, error } = await sbClient
+      .from("hero_photos")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    if (!error && data && data.length) {
+      root.querySelectorAll(".hero-slide").forEach(el => el.remove());
+      root.insertAdjacentHTML("afterbegin", data.map((p, idx) =>
+        `<img class="hero-slide${idx === 0 ? " active" : ""}" src="${p.image_url}" alt="스튜디오 권테리어 대표 사진">`
+      ).join(""));
+    }
+  } catch (e) { /* 실패 시 기본 사진 유지 */ }
+
   const slides = root.querySelectorAll(".hero-slide");
   if (slides.length < 2) return;
   const dotsWrap = root.querySelector(".hero-dots");
@@ -115,9 +133,8 @@ function extractYoutubeId(url) {
 }
 
 (async () => {
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const grid = document.getElementById("home-video-grid");
-  const { data, error } = await client
+  const { data, error } = await sbClient
     .from("youtube_videos")
     .select("*")
     .order("sort_order", { ascending: true })

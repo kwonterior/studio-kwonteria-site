@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대표사진 관리 | 관리자페이지</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body data-page="hero.html">
+<div class="app">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main">
+    <h1>대표사진 관리</h1>
+    <p class="sub">여기서 올리는 사진이 홈페이지 메인 화면 좌측 캐러셀에 그대로 나타납니다. 세로로 긴 사진이 잘 어울립니다.</p>
+
+    <div class="card">
+      <h2>사진 추가 (여러 장 선택 가능)</h2>
+      <div class="form-grid cols-4">
+        <div style="grid-column:1/3;"><label>사진 선택</label><input type="file" id="photo-file" accept="image/*" multiple></div>
+        <div><button type="button" class="btn btn-primary" id="upload-btn">업로드</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>등록된 사진 (<span id="count">0</span>장, 화면에는 순서 숫자가 작은 것부터 나옵니다)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>사진</th><th>순서</th><th>등록일</th><th></th></tr></thead>
+          <tbody id="list-body"><tr class="empty-row"><td colspan="4">불러오는 중...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin-common.js"></script>
+<script>
+// 이미지 로드 실패 시 깨진 아이콘 대신 "사진 없음" 표시로 교체
+function imgFallback(el) {
+  const span = document.createElement("span");
+  span.textContent = "사진 없음";
+  span.style.cssText = "display:inline-flex;align-items:center;justify-content:center;color:var(--sub);font-size:11px;background:var(--bg);border-radius:4px;padding:4px 8px;";
+  el.replaceWith(span);
+}
+
+async function loadList() {
+  const { data, error } = await sbClient.from("hero_photos").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+  const tbody = document.getElementById("list-body");
+  document.getElementById("count").textContent = data ? data.length : 0;
+  if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="4">불러오기 실패: ${error.message}</td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="4">등록된 사진이 없습니다. 사진을 올리기 전까지는 홈페이지에 기존 기본 사진이 그대로 보입니다.</td></tr>`; return; }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td><img src="${p.image_url}" style="width:60px;height:90px;object-fit:cover;border-radius:4px;" onerror="imgFallback(this)"></td>
+      <td><input type="number" value="${p.sort_order ?? 0}" style="width:70px;" onchange="updateOrder(${p.id}, this.value)"></td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="deletePhoto(${p.id}, '${p.image_path}')">삭제</button></td>
+    </tr>
+  `).join("");
+}
+
+async function updateOrder(id, value) {
+  await sbClient.from("hero_photos").update({ sort_order: Number(value) || 0 }).eq("id", id);
+}
+
+async function deletePhoto(id, imagePath) {
+  if (!confirm("이 사진을 삭제하시겠습니까?")) return;
+  if (imagePath) await sbClient.storage.from("portfolio").remove([imagePath]);
+  const { error } = await sbClient.from("hero_photos").delete().eq("id", id);
+  if (error) { alert("삭제 실패: " + error.message); return; }
+  loadList();
+}
+
+(async () => {
+  const auth = await requireAuth();
+  if (!auth) return;
+  loadList();
+
+  document.getElementById("upload-btn").addEventListener("click", async () => {
+    const files = document.getElementById("photo-file").files;
+    if (!files.length) { alert("업로드할 사진을 선택해주세요."); return; }
+    const btn = document.getElementById("upload-btn");
+    btn.disabled = true;
+    btn.textContent = "업로드 중...";
+    for (const file of files) {
+      const path = `hero/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+      const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
+      if (uploadError) { alert("업로드 실패: " + uploadError.message); continue; }
+      const imageUrl = sbClient.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
+      await sbClient.from("hero_photos").insert([{ image_url: imageUrl, image_path: path, created_by: auth.user.id }]);
+    }
+    btn.disabled = false;
+    btn.textContent = "업로드";
+    document.getElementById("photo-file").value = "";
+    loadList();
+  });
+})();
+</script>
+</body>
+</html>
