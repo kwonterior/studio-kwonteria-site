@@ -226,9 +226,10 @@ async function deleteRow(id) {
     let imagePath = form.image_path.value;
     let imageUrl = form.image_url.value;
 
-    const file = form.image_file.files[0];
-    if (file) {
+    const rawFile = form.image_file.files[0];
+    if (rawFile) {
       submitBtn.textContent = "사진 업로드 중...";
+      const file = await compressImage(rawFile);
       const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
       const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
       if (uploadError) {
@@ -286,7 +287,8 @@ async function deleteRow(id) {
     btn.disabled = true;
     btn.textContent = "업로드 중...";
     let nextOrder = galleryList.length;
-    for (const file of files) {
+    for (const rawFile of files) {
+      const file = await compressImage(rawFile);
       const path = `gallery/${editingId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
       const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
       if (uploadError) { alert("업로드 실패: " + uploadError.message); continue; }

@@ -79,3 +79,39 @@ function fmtPhone(raw) {
   if (digits.length === 10) return digits.replace(/(\d{3})(\d{3,4})(\d{4})/, "$1 $2 $3");
   return raw;
 }
+
+// 스마트폰 원본 사진(수 MB~십수 MB)을 그대로 올리면 목록 화면이 느려지므로,
+// 업로드 전에 브라우저에서 가로/세로 최대 1600px, JPEG 82% 품질로 줄여서 올림.
+// 이미지가 아니거나(PDF 등) 이미 충분히 작으면 원본 그대로 사용.
+function compressImage(file, maxDimension = 1600, quality = 0.82) {
+  return new Promise((resolve) => {
+    if (!file.type || !file.type.startsWith("image/") || file.type === "image/gif") {
+      resolve(file);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const { width, height } = img;
+        if (width <= maxDimension && height <= maxDimension && file.size < 800 * 1024) {
+          resolve(file);
+          return;
+        }
+        const scale = Math.min(1, maxDimension / Math.max(width, height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
+        }, "image/jpeg", quality);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}

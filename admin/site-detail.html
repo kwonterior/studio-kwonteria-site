@@ -160,10 +160,12 @@ function toISO(y, m, d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
 function fmtMoney(n){ if (n === null || n === undefined || n === "") return "-"; return Number(n).toLocaleString("ko-KR") + "원"; }
 
 async function loadHead() {
-  const { data: c } = await sbClient.from("customers").select("*").eq("id", customerId).single();
+  const [{ data: c }, { data: quotes }] = await Promise.all([
+    sbClient.from("customers").select("*").eq("id", customerId).single(),
+    sbClient.from("quotes").select("*").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(1)
+  ]);
   customer = c;
   if (!c) { document.getElementById("site-head").innerHTML = "고객을 찾을 수 없습니다."; return; }
-  const { data: quotes } = await sbClient.from("quotes").select("*").eq("customer_id", customerId).order("created_at", { ascending: false }).limit(1);
   const q = quotes && quotes[0];
   const fields = [
     ["연락처", fmtPhone(c.phone)], ["주소", c.address], ["지역", c.region],
@@ -433,12 +435,22 @@ async function loadFiles() {
   });
 }
 
+// 체크리스트/현장 보고/마감 디테일/도면 탭은 처음 클릭할 때만 불러옴(페이지 진입 시 5개 탭 데이터를 전부 미리 불러오면 느려짐)
+const tabLoaders = { checklist: loadChecklist, report: loadReports, finish: loadFinishDetails, files: loadFiles };
+const loadedTabs = new Set(["schedule"]);
+
 document.querySelectorAll(".tabbtn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tabbtn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
     document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+
+    const tab = btn.dataset.tab;
+    if (!loadedTabs.has(tab) && tabLoaders[tab]) {
+      loadedTabs.add(tab);
+      tabLoaders[tab]();
+    }
   });
 });
 
@@ -448,18 +460,13 @@ document.querySelectorAll(".tabbtn").forEach(btn => {
   isOwner = auth.profile.role === "owner";
   if (!customerId) { document.getElementById("site-head").innerHTML = "잘못된 접근입니다."; return; }
 
-  await loadHead();
-  await loadCategories();
+  await Promise.all([loadHead(), loadCategories()]);
   await renderProgress();
 
   const now = new Date();
   viewYear = now.getFullYear();
   viewMonth = now.getMonth() + 1;
   await loadAndRenderCalendar();
-  await loadChecklist();
-  await loadReports();
-  await loadFinishDetails();
-  await loadFiles();
 
   document.getElementById("prev-month").addEventListener("click", () => shiftMonth(-1));
   document.getElementById("next-month").addEventListener("click", () => shiftMonth(1));
@@ -531,11 +538,12 @@ document.querySelectorAll(".tabbtn").forEach(btn => {
   document.getElementById("file-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const fileInput = document.getElementById("file-input");
-    const file = fileInput.files[0];
-    if (!file) return;
+    const rawFile = fileInput.files[0];
+    if (!rawFile) return;
     const submitBtn = document.getElementById("file-submit-btn");
     submitBtn.disabled = true;
     submitBtn.textContent = "업로드 중...";
+    const file = await compressImage(rawFile);
     const path = `sitefiles/${customerId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
     const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
     submitBtn.disabled = false;
