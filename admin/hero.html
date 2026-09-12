@@ -102,7 +102,8 @@ async function deletePhoto(id, imagePath) {
       const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
       if (uploadError) { alert("업로드 실패: " + uploadError.message); continue; }
       const imageUrl = sbClient.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
-      await sbClient.from("hero_photos").insert([{ image_url: imageUrl, image_path: path, sort_order: nextOrder++, created_by: auth.user.id }]);
+      const { error: insertError } = await sbClient.from("hero_photos").insert([{ image_url: imageUrl, image_path: path, sort_order: nextOrder++, created_by: auth.user.id }]);
+      if (insertError) { alert("저장 실패: " + insertError.message); continue; }
     }
     btn.disabled = false;
     btn.textContent = "업로드";
