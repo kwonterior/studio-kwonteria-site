@@ -19,7 +19,7 @@
         <input type="hidden" name="id">
         <input type="hidden" name="image_path">
         <input type="hidden" name="image_url">
-        <div class="form-grid cols-4">
+        <div class="form-grid">
           <div><label>현장명 *</label><input type="text" name="title" required placeholder="예: 황성동 30평 아파트"></div>
           <div><label>구분</label>
             <select name="category">
@@ -28,7 +28,6 @@
               <option value="기타">기타</option>
             </select>
           </div>
-          <div><label>정렬 순서</label><input type="number" name="sort_order" value="0" placeholder="숫자가 작을수록 먼저 표시"></div>
           <div><label>대표 사진</label><input type="file" name="image_file" accept="image/*"></div>
         </div>
         <div class="form-grid cols-4" style="margin-top:12px;">
@@ -50,7 +49,7 @@
 
     <div class="card" id="gallery-card" style="display:none;">
       <h2>상세페이지 갤러리 사진</h2>
-      <p class="sub">홈페이지 시공 사례를 클릭했을 때 대표 사진 아래로 이어서 보이는 사진들입니다. 순서는 숫자가 작을수록 먼저 나옵니다.</p>
+      <p class="sub">홈페이지 시공 사례를 클릭했을 때 대표 사진 아래로 이어서 보이는 사진들입니다. ▲▼로 순서를 바꿀 수 있습니다.</p>
       <div class="form-grid cols-4">
         <div style="grid-column:1/3;"><label>사진 추가 (여러 장 선택 가능)</label><input type="file" id="gallery-file" accept="image/*" multiple></div>
         <div><button type="button" class="btn btn-primary" id="gallery-upload-btn">업로드</button></div>
@@ -64,7 +63,7 @@
     </div>
 
     <div class="card">
-      <h2>등록된 시공 사례 (<span id="count">0</span>개)</h2>
+      <h2>등록된 시공 사례 (<span id="count">0</span>개, ▲▼로 순서를 바꿀 수 있고 위에 있을수록 먼저 나옵니다)</h2>
       <div class="table-wrap">
         <table>
           <thead>
@@ -92,18 +91,24 @@ function imgFallback(el) {
   el.replaceWith(span);
 }
 
+let portfolioList = [];
+
 async function loadList() {
   const { data, error } = await sbClient.from("projects").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false });
   const tbody = document.getElementById("list-body");
   document.getElementById("count").textContent = data ? data.length : 0;
   if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">불러오기 실패: ${error.message}</td></tr>`; return; }
+  portfolioList = data;
   if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="6">등록된 시공 사례가 없습니다</td></tr>`; return; }
-  tbody.innerHTML = data.map(p => `
+  tbody.innerHTML = data.map((p, idx) => `
     <tr>
       <td>${p.image_url ? `<img src="${p.image_url}" style="width:70px;height:52px;object-fit:cover;border-radius:4px;" onerror="imgFallback(this)">` : "-"}</td>
       <td>${p.title}</td>
       <td>${p.category || "-"}</td>
-      <td>${p.sort_order ?? 0}</td>
+      <td><div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="movePortfolio(${idx}, -1)" ${idx === 0 ? "disabled" : ""}>▲</button>
+        <button class="btn btn-ghost btn-sm" onclick="movePortfolio(${idx}, 1)" ${idx === data.length - 1 ? "disabled" : ""}>▼</button>
+      </div></td>
       <td>${fmtDate(p.created_at)}</td>
       <td><div style="display:flex;gap:6px;">
         <button class="btn btn-ghost btn-sm" onclick='editRow(${JSON.stringify(p)})'>수정</button>
@@ -113,12 +118,21 @@ async function loadList() {
   `).join("");
 }
 
+// 두 시공 사례의 순서를 맞바꾸고, 헷갈리지 않게 전체 순서를 0부터 다시 매겨서 저장
+async function movePortfolio(index, dir) {
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= portfolioList.length) return;
+  const reordered = [...portfolioList];
+  [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
+  await Promise.all(reordered.map((p, i) => sbClient.from("projects").update({ sort_order: i }).eq("id", p.id)));
+  loadList();
+}
+
 function editRow(p) {
   editingId = p.id;
   const form = document.getElementById("portfolio-form");
   form.title.value = p.title || "";
   form.category.value = p.category || "아파트";
-  form.sort_order.value = p.sort_order ?? 0;
   form.description.value = p.description || "";
   form.image_path.value = p.image_path || "";
   form.image_url.value = p.image_url || "";
@@ -146,23 +160,35 @@ function resetForm() {
 }
 
 // 상세페이지 갤러리 사진 관리 (editingId가 있을 때만 동작)
+let galleryList = [];
+
 async function loadGallery() {
   if (!editingId) return;
   const { data, error } = await sbClient.from("project_photos").select("*").eq("project_id", editingId).order("sort_order", { ascending: true });
   const tbody = document.getElementById("gallery-list-body");
   if (error) { tbody.innerHTML = `<tr class="empty-row"><td colspan="3">불러오기 실패: ${error.message}</td></tr>`; return; }
+  galleryList = data;
   if (!data.length) { tbody.innerHTML = `<tr class="empty-row"><td colspan="3">등록된 갤러리 사진이 없습니다</td></tr>`; return; }
-  tbody.innerHTML = data.map(g => `
+  tbody.innerHTML = data.map((g, idx) => `
     <tr>
       <td><img src="${g.image_url}" style="width:90px;height:66px;object-fit:cover;border-radius:4px;" onerror="imgFallback(this)"></td>
-      <td><input type="number" value="${g.sort_order ?? 0}" style="width:70px;" onchange="updateGalleryOrder(${g.id}, this.value)"></td>
+      <td><div style="display:flex;gap:4px;">
+        <button class="btn btn-ghost btn-sm" onclick="moveGalleryPhoto(${idx}, -1)" ${idx === 0 ? "disabled" : ""}>▲</button>
+        <button class="btn btn-ghost btn-sm" onclick="moveGalleryPhoto(${idx}, 1)" ${idx === data.length - 1 ? "disabled" : ""}>▼</button>
+      </div></td>
       <td><button class="btn btn-ghost btn-sm" onclick="deleteGalleryPhoto(${g.id}, '${g.image_path}')">삭제</button></td>
     </tr>
   `).join("");
 }
 
-async function updateGalleryOrder(id, value) {
-  await sbClient.from("project_photos").update({ sort_order: Number(value) || 0 }).eq("id", id);
+// 두 갤러리 사진의 순서를 맞바꾸고, 헷갈리지 않게 전체 순서를 0부터 다시 매겨서 저장
+async function moveGalleryPhoto(index, dir) {
+  const newIndex = index + dir;
+  if (newIndex < 0 || newIndex >= galleryList.length) return;
+  const reordered = [...galleryList];
+  [reordered[index], reordered[newIndex]] = [reordered[newIndex], reordered[index]];
+  await Promise.all(reordered.map((g, i) => sbClient.from("project_photos").update({ sort_order: i }).eq("id", g.id)));
+  loadGallery();
 }
 
 async function deleteGalleryPhoto(id, imagePath) {
@@ -222,7 +248,6 @@ async function deleteRow(id) {
     const payload = {
       title: form.title.value,
       category: form.category.value,
-      sort_order: Number(form.sort_order.value) || 0,
       description: form.description.value,
       image_path: imagePath,
       image_url: imageUrl,
@@ -236,6 +261,7 @@ async function deleteRow(id) {
     if (editingId) {
       result = await sbClient.from("projects").update(payload).eq("id", editingId).select().single();
     } else {
+      payload.sort_order = portfolioList.length; // 새 시공 사례는 맨 뒤에 추가, 순서는 목록에서 화살표로 조정
       payload.created_by = auth.user.id;
       result = await sbClient.from("projects").insert([payload]).select().single();
     }
@@ -259,12 +285,13 @@ async function deleteRow(id) {
     const btn = document.getElementById("gallery-upload-btn");
     btn.disabled = true;
     btn.textContent = "업로드 중...";
+    let nextOrder = galleryList.length;
     for (const file of files) {
       const path = `gallery/${editingId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
       const { error: uploadError } = await sbClient.storage.from("portfolio").upload(path, file);
       if (uploadError) { alert("업로드 실패: " + uploadError.message); continue; }
       const imageUrl = sbClient.storage.from("portfolio").getPublicUrl(path).data.publicUrl;
-      await sbClient.from("project_photos").insert([{ project_id: editingId, image_url: imageUrl, image_path: path, created_by: auth.user.id }]);
+      await sbClient.from("project_photos").insert([{ project_id: editingId, image_url: imageUrl, image_path: path, sort_order: nextOrder++, created_by: auth.user.id }]);
     }
     btn.disabled = false;
     btn.textContent = "업로드";
