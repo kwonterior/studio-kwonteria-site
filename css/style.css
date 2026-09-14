@@ -113,7 +113,9 @@ img{max-width:100%;display:block;}
 .hero-split--full{min-height:100vh;}
 .hero-media-col{
   position:relative;flex:1 1 38%;min-height:64vh;overflow:hidden;
+  opacity:0;transition:opacity .25s ease;
 }
+.hero-media-col.ready{opacity:1;}
 .hero-media-col img,.hero-media-col .ph-image{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   border-radius:0;aspect-ratio:auto;margin:0;

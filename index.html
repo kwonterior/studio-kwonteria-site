@@ -91,23 +91,29 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 히어로 좌측 사진 캐러셀 (사진이 늘어나도 그대로 동작)
 // admin/hero.html에서 등록한 사진이 있으면 그걸로 교체, 하나도 없으면 기본 사진을 그대로 씀
+// 사진이 정해지기 전까지는 화면에 안 보이게 숨겨뒀다가 한 번에 보여줌 — 예전 기본 사진이 잠깐 보였다가
+// 등록된 사진으로 바뀌는 깜빡임(FOUC)을 막기 위함. 네트워크가 느려도 1.5초 뒤에는 무조건 보여줌.
 (async function () {
   const root = document.getElementById("hero-carousel");
   if (!root) return;
 
   try {
-    const { data, error } = await sbClient
+    const fetchPhotos = sbClient
       .from("hero_photos")
       .select("*")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
-    if (!error && data && data.length) {
+    const timeout = new Promise(resolve => setTimeout(resolve, 1500));
+    const result = await Promise.race([fetchPhotos, timeout]);
+    if (result && !result.error && result.data && result.data.length) {
       root.querySelectorAll(".hero-slide").forEach(el => el.remove());
-      root.insertAdjacentHTML("afterbegin", data.map((p, idx) =>
+      root.insertAdjacentHTML("afterbegin", result.data.map((p, idx) =>
         `<img class="hero-slide${idx === 0 ? " active" : ""}" src="${p.image_url}" alt="스튜디오 권테리어 대표 사진">`
       ).join(""));
     }
   } catch (e) { /* 실패 시 기본 사진 유지 */ }
+
+  root.classList.add("ready");
 
   const slides = root.querySelectorAll(".hero-slide");
   if (slides.length < 2) return;
